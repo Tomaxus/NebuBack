@@ -1,4 +1,3 @@
-# Python
 __pycache__/
 *.py[cod]
 .mypy_cache/
@@ -6,23 +5,18 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Entornos virtuales
 venv/
 .venv/
 env/
 
-# Variables de entorno (secretos)
 .env
 .env.*
 !.env.example
-
-# Django
 db.sqlite3
 staticfiles/
 media/
 *.log
 
-# Editores y sistema
 .vscode/
 .idea/
 .DS_Store

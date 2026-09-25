@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nebuback
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn devconf.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
