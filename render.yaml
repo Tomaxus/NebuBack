@@ -1,5 +1,6 @@
 services:
-  - name: nebuback
+  - type: web
+    name: nebuback
     runtime: python
     plan: free
     buildCommand: ./build.sh
