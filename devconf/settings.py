@@ -34,9 +34,9 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "corsheaders",
-    "usuarios",
-    "catalogo",
-    "carrito",
+    "devconfsite.usuarios",
+    "devconfsite.catalogo",
+    "devconfsite.carrito",
 ]
 
 MIDDLEWARE = [
