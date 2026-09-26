@@ -3,6 +3,8 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils import timezone
 
+from devconfsite.comun import normalizar_texto
+
 validate_image = RegexValidator(
     regex=r"^(https://\S+|/(?!/)\S*)$",
     message="Enter an image URL starting with https:// (or a path of this site, like /images/catalog/photo.png).",
@@ -57,6 +59,7 @@ class Producto(models.Model):
     description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    search_text = models.TextField(blank=True, default="", editable=False)
 
     class Meta:
         verbose_name = "producto"
@@ -72,6 +75,13 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.search_text = normalizar_texto(f"{self.name} {self.category.name}")
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            kwargs["update_fields"] = {*update_fields, "search_text"}
+        super().save(*args, **kwargs)
 
     @property
     def is_live(self):
