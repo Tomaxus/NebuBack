@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Iphone",
+    "slug": "iphone"
+  },
+  {
+    "id": 2,
+    "name": "Macbook",
+    "slug": "macbook"
+  },
+  {
+    "id": 3,
+    "name": "Ipad",
+    "slug": "ipad"
+  },
+  {
+    "id": 4,
+    "name": "AirPods",
+    "slug": "airpods"
+  },
+  {
+    "id": 5,
+    "name": "Apple Watch",
+    "slug": "apple-watch"
+  },
+  {
+    "id": 6,
+    "name": "Apple Vision Pro",
+    "slug": "apple-vision-pro"
+  },
+  {
+    "id": 7,
+    "name": "Accesories",
+    "slug": "accesories"
+  }
+]
