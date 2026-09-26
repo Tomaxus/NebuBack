@@ -1,0 +1,849 @@
+[
+  {
+    "id": 1,
+    "slug": "iphone-18-pro-max",
+    "name": "iPhone 18 Pro Max",
+    "category": "Iphone",
+    "price": 1199,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": true,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB",
+          "2TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Silver",
+          "Cosmic Orange",
+          "Deep Blue"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 8,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "slug": "macbook-neo",
+    "name": "MacBook Neo",
+    "category": "Macbook",
+    "price": 699,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "1TB",
+          "2TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Silver",
+          "Blush",
+          "Citrus",
+          "Citrus"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 15,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "slug": "ipad-pro-13",
+    "name": "iPad Pro 13\"",
+    "category": "Ipad",
+    "price": 1299,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": true,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB",
+          "2TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Silver",
+          "Space Black"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 22,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "slug": "airpods-pro-2-gen",
+    "name": "AirPods Pro 2 Gen",
+    "category": "AirPods",
+    "price": 249,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": true,
+    "options": [],
+    "status": "live",
+    "stock": 29,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "slug": "apple-watch-ultra-3",
+    "name": "Apple Watch Ultra 3",
+    "category": "Apple Watch",
+    "price": 799,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": true,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Natural",
+          "Black"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 36,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "slug": "apple-vision-pro",
+    "name": "Apple Vision Pro",
+    "category": "Apple Vision Pro",
+    "price": 3499,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB"
+        ],
+        "layout": "stack"
+      }
+    ],
+    "status": "live",
+    "stock": 43,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "slug": "magsafe-charger",
+    "name": "MagSafe Charger",
+    "category": "Accesories",
+    "price": 39,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [],
+    "status": "live",
+    "stock": 50,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 8,
+    "slug": "iphone-18-pro",
+    "name": "iPhone 18 Pro",
+    "category": "Iphone",
+    "price": 1099,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Silver",
+          "Cosmic Orange",
+          "Deep Blue"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 14,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 9,
+    "slug": "macbook-air-13-m4",
+    "name": "MacBook Air 13\" M4",
+    "category": "Macbook",
+    "price": 1099,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": true,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Midnight",
+          "Starlight",
+          "Sky Blue",
+          "Silver"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 3,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 10,
+    "slug": "ipad-pro-11",
+    "name": "iPad Pro 11\"",
+    "category": "Ipad",
+    "price": 999,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB",
+          "2TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Silver",
+          "Space Black"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 28,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 11,
+    "slug": "airpods-pro-3",
+    "name": "AirPods Pro 3",
+    "category": "AirPods",
+    "price": 249,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [],
+    "status": "live",
+    "stock": 35,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 12,
+    "slug": "apple-watch-series-11",
+    "name": "Apple Watch Series 11",
+    "category": "Apple Watch",
+    "price": 399,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Size",
+        "values": [
+          "42mm",
+          "46mm"
+        ]
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Jet Black",
+          "Rose Gold",
+          "Silver"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 42,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 13,
+    "slug": "usb-c-charge-cable",
+    "name": "USB-C Charge Cable",
+    "category": "Accesories",
+    "price": 19,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Length",
+        "values": [
+          "1 m",
+          "2 m"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 49,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 14,
+    "slug": "iphone-18",
+    "name": "iPhone 18",
+    "category": "Iphone",
+    "price": 899,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "128GB",
+          "256GB",
+          "512GB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Black",
+          "White",
+          "Pink",
+          "Ultramarine"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 13,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 15,
+    "slug": "macbook-air-15-m4",
+    "name": "MacBook Air 15\" M4",
+    "category": "Macbook",
+    "price": 1299,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Midnight",
+          "Starlight",
+          "Sky Blue",
+          "Silver"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 20,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 16,
+    "slug": "ipad-air",
+    "name": "iPad Air",
+    "category": "Ipad",
+    "price": 599,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "128GB",
+          "256GB",
+          "512GB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Blue",
+          "Purple",
+          "Starlight"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 27,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 17,
+    "slug": "airpods-max",
+    "name": "AirPods Max",
+    "category": "AirPods",
+    "price": 549,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Midnight",
+          "Starlight",
+          "Blue",
+          "Purple",
+          "Orange"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 34,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 18,
+    "slug": "apple-watch-se-3",
+    "name": "Apple Watch SE 3",
+    "category": "Apple Watch",
+    "price": 249,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Size",
+        "values": [
+          "40mm",
+          "44mm"
+        ]
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Midnight",
+          "Starlight"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 3,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 19,
+    "slug": "apple-pencil-pro",
+    "name": "Apple Pencil Pro",
+    "category": "Accesories",
+    "price": 129,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [],
+    "status": "live",
+    "stock": 48,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 20,
+    "slug": "iphone-air",
+    "name": "iPhone Air",
+    "category": "Iphone",
+    "price": 999,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "256GB",
+          "512GB",
+          "1TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Space Black",
+          "Cloud White"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 12,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 21,
+    "slug": "macbook-pro-14-m5",
+    "name": "MacBook Pro 14\" M5",
+    "category": "Macbook",
+    "price": 1599,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": true,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "512GB",
+          "1TB",
+          "2TB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Space Black",
+          "Silver"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 19,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 22,
+    "slug": "ipad-mini",
+    "name": "iPad mini",
+    "category": "Ipad",
+    "price": 499,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Blue",
+          "Purple",
+          "Starlight",
+          "Space Gray"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 26,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 23,
+    "slug": "airpods-4",
+    "name": "AirPods 4",
+    "category": "AirPods",
+    "price": 129,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [],
+    "status": "live",
+    "stock": 33,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 24,
+    "slug": "apple-watch-hermes",
+    "name": "Apple Watch Hermès",
+    "category": "Apple Watch",
+    "price": 1249,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Size",
+        "values": [
+          "42mm",
+          "46mm"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 40,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 25,
+    "slug": "magic-keyboard",
+    "name": "Magic Keyboard",
+    "category": "Accesories",
+    "price": 299,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Black",
+          "White"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 47,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 26,
+    "slug": "iphone-17e",
+    "name": "iPhone 17e",
+    "category": "Iphone",
+    "price": 599,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Black",
+          "White"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 11,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 27,
+    "slug": "macbook-pro-16-m5",
+    "name": "MacBook Pro 16\" M5",
+    "category": "Macbook",
+    "price": 2499,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "1TB",
+          "2TB",
+          "4TB"
+        ],
+        "layout": "stack"
+      }
+    ],
+    "status": "live",
+    "stock": 3,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 28,
+    "slug": "ipad",
+    "name": "iPad",
+    "category": "Ipad",
+    "price": 349,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Storage",
+        "values": [
+          "128GB",
+          "256GB"
+        ],
+        "layout": "stack"
+      },
+      {
+        "name": "Color",
+        "values": [
+          "Blue",
+          "Pink",
+          "Silver"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 25,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 29,
+    "slug": "airpods-4-with-anc",
+    "name": "AirPods 4 with ANC",
+    "category": "AirPods",
+    "price": 179,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [],
+    "status": "live",
+    "stock": 32,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 30,
+    "slug": "silicone-case",
+    "name": "Silicone Case",
+    "category": "Accesories",
+    "price": 49,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Color",
+        "values": [
+          "Black",
+          "Midnight",
+          "Stone Gray",
+          "Pink",
+          "Blue",
+          "Orange",
+          "Clay"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 39,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  },
+  {
+    "id": 31,
+    "slug": "airtag",
+    "name": "AirTag",
+    "category": "Accesories",
+    "price": 29,
+    "image": "/images/catalog/airpods-pro-2.png",
+    "isNew": false,
+    "recommended": false,
+    "options": [
+      {
+        "name": "Pack",
+        "values": [
+          "1 Pack",
+          "4 Pack"
+        ]
+      }
+    ],
+    "status": "live",
+    "stock": 46,
+    "description": "Our most advanced series of chips ever built for a pro laptop. Each chip in the M5 family delivers phenomenal single- and multithreaded CPU performance and faster unified memory.",
+    "createdAt": "2026-01-15T12:00:00.000Z",
+    "updatedAt": "2026-01-15T12:00:00.000Z"
+  }
+]
