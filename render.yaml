@@ -17,6 +17,6 @@ services:
       - key: FRONTEND_URL
         value: https://nebulab.digital
       - key: RESET_PASSWORD_FROM
-        value: Nebulab <onboarding@resend.dev>
+        value: Nebulab <noreply@nebulab.digital>
       - key: RESEND_API_KEY
         sync: false

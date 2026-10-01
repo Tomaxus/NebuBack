@@ -161,7 +161,7 @@ SIMPLE_JWT = {
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-RESET_PASSWORD_FROM = os.environ.get("RESET_PASSWORD_FROM", "Nebulab <onboarding@resend.dev>")
+RESET_PASSWORD_FROM = os.environ.get("RESET_PASSWORD_FROM", "Nebulab <noreply@nebulab.digital>")
 RESET_TOKEN_MINUTOS = int(os.environ.get("RESET_TOKEN_MINUTOS", "60"))
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Nebulab <no-reply@nebulab.com>")
