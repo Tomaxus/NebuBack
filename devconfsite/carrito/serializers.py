@@ -1,15 +1,10 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from devconfsite.catalogo.serializers import ProductoSerializer
+from devconfsite.catalogo.serializers import OpcionElegidaSerializer, ProductoSerializer
 from devconfsite.comun import DineroField, SerializerBase
 
 from .models import Carrito, ItemCarrito, LineaPedido, Pedido
-
-
-class OpcionElegidaSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    value = serializers.CharField()
 
 
 @extend_schema_field(OpcionElegidaSerializer(many=True))
@@ -20,10 +15,15 @@ class OpcionesElegidasField(serializers.JSONField):
 class ItemCarritoSerializer(SerializerBase):
     price = DineroField()
     options = OpcionesElegidasField()
+    variant_id = serializers.IntegerField(read_only=True, allow_null=True)
+    stock = serializers.SerializerMethodField()
 
     class Meta:
         model = ItemCarrito
-        fields = ["id", "slug", "name", "price", "image", "options", "quantity"]
+        fields = ["id", "slug", "name", "price", "image", "options", "quantity", "variant_id", "stock"]
+
+    def get_stock(self, item) -> int:
+        return item.variant.stock if item.variant_id else item.product.stock
 
 
 class CarritoSerializer(SerializerBase):
@@ -67,12 +67,13 @@ class CheckoutSerializer(serializers.Serializer):
 
 class LineaPedidoSerializer(SerializerBase):
     product_id = serializers.IntegerField(read_only=True, allow_null=True)
+    variant_id = serializers.IntegerField(read_only=True, allow_null=True)
     price = DineroField()
     options = OpcionesElegidasField()
 
     class Meta:
         model = LineaPedido
-        fields = ["product_id", "slug", "name", "category", "image", "price", "quantity", "options"]
+        fields = ["product_id", "variant_id", "slug", "name", "category", "image", "price", "quantity", "options"]
 
 
 @extend_schema_field(DireccionSerializer)

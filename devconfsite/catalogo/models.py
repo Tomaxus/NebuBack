@@ -86,3 +86,43 @@ class Producto(models.Model):
     @property
     def is_live(self):
         return self.status == self.Status.LIVE
+
+    def recalcular_desde_variantes(self):
+        datos = self.variants.aggregate(minimo=models.Min("price"), total=models.Sum("stock"), cantidad=models.Count("id"))
+        if not datos["cantidad"]:
+            return False
+        Producto.objects.filter(pk=self.pk).update(price=datos["minimo"], stock=datos["total"])
+        self.price, self.stock = datos["minimo"], datos["total"]
+        return True
+
+
+def clave_variante(opciones):
+    return "|".join(sorted(f"{o['name'].strip().lower()}={o['value'].strip().lower()}" for o in opciones))
+
+
+class Variante(models.Model):
+    product = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="variants")
+    options = models.JSONField(default=list)
+    options_key = models.CharField(max_length=500, editable=False)
+    price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    stock = models.PositiveIntegerField(default=0)
+    sku = models.CharField(max_length=60, blank=True, default="")
+
+    class Meta:
+        verbose_name = "variante"
+        verbose_name_plural = "variantes"
+        ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(fields=["product", "options_key"], name="variante_unica_por_producto"),
+            models.CheckConstraint(condition=models.Q(price__gte=0), name="precio_variante_no_negativo"),
+        ]
+
+    def __str__(self):
+        return f"{self.product} ({', '.join(o['value'] for o in self.options)})"
+
+    def save(self, *args, **kwargs):
+        self.options_key = clave_variante(self.options)
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            kwargs["update_fields"] = {*update_fields, "options_key"}
+        super().save(*args, **kwargs)
