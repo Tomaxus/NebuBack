@@ -49,7 +49,7 @@ class CategoriaListView(VistaPublica, generics.ListAPIView):
     parameters=[orden_param(["created_at", "price", "name"], "-created_at")],
 )
 class ProductoListView(VistaPublica, generics.ListAPIView):
-    queryset = Producto.objects.filter(status=Producto.Status.LIVE).select_related("category")
+    queryset = Producto.objects.filter(status=Producto.Status.LIVE).select_related("category").prefetch_related("variants")
     serializer_class = ProductoSerializer
     pagination_class = PaginacionCatalogo
     filterset_class = ProductoFilter
@@ -63,7 +63,7 @@ class ProductoListView(VistaPublica, generics.ListAPIView):
     description="Busca el producto por su slug. Devuelve 404 si no existe o está desactivado.",
 )
 class ProductoDetailView(VistaPublica, generics.RetrieveAPIView):
-    queryset = Producto.objects.filter(status=Producto.Status.LIVE).select_related("category")
+    queryset = Producto.objects.filter(status=Producto.Status.LIVE).select_related("category").prefetch_related("variants")
     serializer_class = ProductoSerializer
     lookup_field = "slug"
     filter_backends = []
@@ -86,7 +86,7 @@ class ProductoDetailView(VistaPublica, generics.RetrieveAPIView):
 @extend_schema(tags=["Admin · Productos"])
 class ProductoAdminListView(generics.ListCreateAPIView):
     permission_classes = [EsAdmin]
-    queryset = Producto.objects.select_related("category")
+    queryset = Producto.objects.select_related("category").prefetch_related("variants")
     serializer_class = ProductoSerializer
     filterset_class = ProductoAdminFilter
     ordering_fields = ["name", "status", "slug", "category", "price", "stock", "updated_at"]
@@ -102,6 +102,6 @@ class ProductoAdminListView(generics.ListCreateAPIView):
 @extend_schema(tags=["Admin · Productos"])
 class ProductoAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [EsAdmin]
-    queryset = Producto.objects.select_related("category")
+    queryset = Producto.objects.select_related("category").prefetch_related("variants")
     serializer_class = ProductoSerializer
     http_method_names = ["get", "patch", "delete", "head", "options"]

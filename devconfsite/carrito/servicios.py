@@ -9,7 +9,7 @@ from django.utils import timezone
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.serializers import ValidationError
 
-from devconfsite.catalogo.models import Producto
+from devconfsite.catalogo.models import Producto, Variante, clave_variante
 from devconfsite.comun import ReglaDeNegocio
 from devconfsite.usuarios.models import Usuario
 
@@ -55,27 +55,46 @@ def normalizar_opciones(producto, elegidas):
     return normalizadas
 
 
+def variante_de(producto, opciones, bloquear=False):
+    variantes = Variante.objects.filter(product=producto, options_key=clave_variante(opciones))
+    if bloquear:
+        variantes = variantes.select_for_update()
+    return variantes.first()
+
+
 @transaction.atomic
 def agregar_al_carrito(usuario, slug, opciones):
     producto = Producto.objects.select_for_update().filter(slug=slug, status=Producto.Status.LIVE).first()
     if producto is None:
         raise ValidationError({"slug": ["This product is not available."]})
     opciones = normalizar_opciones(producto, opciones)
+    variante = None
+    if producto.variants.exists():
+        variante = variante_de(producto, opciones, bloquear=True)
+        if variante is None:
+            raise ReglaDeNegocio("That combination is not available.")
+        if variante.stock <= 0:
+            raise ReglaDeNegocio("Sold out.")
     carrito = carrito_activo(usuario)
     item = ItemCarrito.objects.filter(cart=carrito, product=producto, options=opciones).first()
     nueva_cantidad = (item.quantity if item else 0) + 1
-    if nueva_cantidad > producto.stock:
+    if variante is not None:
+        if nueva_cantidad > variante.stock:
+            raise ReglaDeNegocio(f"Only {variante.stock} left in stock.")
+    elif nueva_cantidad > producto.stock:
         raise ValidationError({"quantity": [mensaje_stock(producto.stock)]})
     if item:
         item.quantity = nueva_cantidad
-        item.save(update_fields=["quantity"])
+        item.variant = variante
+        item.save(update_fields=["quantity", "variant"])
     else:
         ItemCarrito.objects.create(
             cart=carrito,
             product=producto,
+            variant=variante,
             slug=producto.slug,
             name=producto.name,
-            price=producto.price,
+            price=variante.price if variante else producto.price,
             image=producto.image,
             options=opciones,
             quantity=1,
@@ -83,9 +102,18 @@ def agregar_al_carrito(usuario, slug, opciones):
     return carrito
 
 
+def stock_de_linea(item):
+    if item.variant_id is not None:
+        return item.variant.stock
+    if item.product.variants.exists():
+        variante = variante_de(item.product, item.options)
+        return variante.stock if variante else 0
+    return item.product.stock
+
+
 def item_del_usuario(usuario, item_id):
     item = (
-        ItemCarrito.objects.select_related("product", "cart")
+        ItemCarrito.objects.select_related("product", "variant", "cart")
         .filter(pk=item_id, cart__user=usuario, cart__status=Carrito.Status.ACTIVE)
         .first()
     )
@@ -100,8 +128,9 @@ def cambiar_cantidad(usuario, item_id, cantidad):
     if cantidad == 0:
         item.delete()
         return item.cart
-    if cantidad > item.product.stock:
-        raise ValidationError({"quantity": [mensaje_stock(item.product.stock)]})
+    disponible = stock_de_linea(item)
+    if cantidad > disponible:
+        raise ValidationError({"quantity": [mensaje_stock(disponible)]})
     item.quantity = cantidad
     item.save(update_fields=["quantity"])
     return item.cart
@@ -126,13 +155,34 @@ def hacer_checkout(usuario, direccion, ultimos4):
     productos = {
         p.pk: p for p in Producto.objects.select_for_update().filter(pk__in=[i.product_id for i in items])
     }
-    no_disponibles = [str(i.pk) for i in items if productos[i.product_id].status != Producto.Status.LIVE]
+    con_variantes = set(
+        Variante.objects.filter(product_id__in=productos).values_list("product_id", flat=True).distinct()
+    )
+    variantes = {
+        (v.product_id, v.options_key): v
+        for v in Variante.objects.select_for_update().filter(product_id__in=con_variantes)
+    }
+    variante_de_item = {}
+    no_disponibles = []
+    for item in items:
+        if productos[item.product_id].status != Producto.Status.LIVE:
+            no_disponibles.append(str(item.pk))
+        elif item.product_id in con_variantes:
+            variante = variantes.get((item.product_id, clave_variante(item.options)))
+            if variante is None:
+                no_disponibles.append(str(item.pk))
+            variante_de_item[item.pk] = variante
     if no_disponibles:
         raise ReglaDeNegocio({"detail": "Some items are no longer available.", "items": no_disponibles})
+    origen = {}
+    for item in items:
+        variante = variante_de_item.get(item.pk)
+        origen[item.pk] = (("v", variante.pk), variante.stock) if variante else (("p", item.product_id), productos[item.product_id].stock)
     pedidas = {}
     for item in items:
-        pedidas[item.product_id] = pedidas.get(item.product_id, 0) + item.quantity
-    sin_stock = [str(i.pk) for i in items if pedidas[i.product_id] > productos[i.product_id].stock]
+        clave = origen[item.pk][0]
+        pedidas[clave] = pedidas.get(clave, 0) + item.quantity
+    sin_stock = [str(i.pk) for i in items if pedidas[origen[i.pk][0]] > origen[i.pk][1]]
     if sin_stock:
         raise ReglaDeNegocio({"detail": "Some items don't have enough stock.", "items": sin_stock})
 
@@ -156,6 +206,7 @@ def hacer_checkout(usuario, direccion, ultimos4):
         LineaPedido(
             order=pedido,
             product=item.product,
+            variant=variante_de_item.get(item.pk),
             slug=item.slug,
             name=item.name,
             category=item.product.category.name,
@@ -166,8 +217,11 @@ def hacer_checkout(usuario, direccion, ultimos4):
         )
         for item in items
     )
-    for producto_id, cantidad in pedidas.items():
-        Producto.objects.filter(pk=producto_id).update(stock=F("stock") - cantidad)
+    for (tipo, clave), cantidad in pedidas.items():
+        modelo = Variante if tipo == "v" else Producto
+        modelo.objects.filter(pk=clave).update(stock=F("stock") - cantidad)
+    for producto_id in con_variantes:
+        productos[producto_id].recalcular_desde_variantes()
     carrito.status = Carrito.Status.CONVERTED
     carrito.save(update_fields=["status"])
     return pedido
@@ -179,12 +233,23 @@ def cambiar_estado_pedido(pedido, nuevo_estado):
     antes_repone = pedido.status in Pedido.RESTOCK_STATUSES
     despues_repone = nuevo_estado in Pedido.RESTOCK_STATUSES
     if antes_repone != despues_repone:
-        for linea in pedido.lines.exclude(product=None):
+        recalcular = set()
+        for linea in pedido.lines.exclude(product=None).select_related("product"):
             if despues_repone:
                 cambio = F("stock") + linea.quantity
             else:
                 cambio = Greatest(F("stock") - linea.quantity, Value(0))
-            Producto.objects.filter(pk=linea.product_id).update(stock=cambio)
+            variante_id = linea.variant_id
+            if variante_id is None and linea.product.variants.exists():
+                variante = variante_de(linea.product, linea.options)
+                variante_id = variante.pk if variante else None
+            if variante_id is not None:
+                Variante.objects.filter(pk=variante_id).update(stock=cambio)
+                recalcular.add(linea.product)
+            elif not linea.product.variants.exists():
+                Producto.objects.filter(pk=linea.product_id).update(stock=cambio)
+        for producto in recalcular:
+            producto.recalcular_desde_variantes()
     pedido.status = nuevo_estado
     pedido.save(update_fields=["status", "updated_at"])
     return pedido
@@ -273,7 +338,7 @@ def construir_dashboard(dias):
         "by_status": [{"status": estado, "count": estados[estado]} for estado in Pedido.Status.values],
         "by_category": por_categoria,
         "top_products": top,
-        "low_stock": productos.filter(status=Producto.Status.LIVE, stock__lte=LOW_STOCK).select_related("category").order_by("stock", "id"),
+        "low_stock": productos.filter(status=Producto.Status.LIVE, stock__lte=LOW_STOCK).select_related("category").prefetch_related("variants").order_by("stock", "id"),
         "catalog": {
             "live": productos.filter(status=Producto.Status.LIVE).count(),
             "disabled": productos.filter(status=Producto.Status.DISABLED).count(),

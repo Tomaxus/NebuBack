@@ -34,7 +34,7 @@ class CatalogoAPITests(APITestCase):
         self.assertEqual(
             list(producto),
             ["id", "slug", "name", "category", "price", "image", "isNew", "recommended",
-             "options", "status", "stock", "description", "createdAt", "updatedAt"],
+             "options", "variants", "status", "stock", "priceMin", "priceMax", "description", "createdAt", "updatedAt"],
         )
         self.assertEqual(producto["category"], "Iphone")
         self.assertEqual(producto["price"], 1199)
@@ -42,6 +42,7 @@ class CatalogoAPITests(APITestCase):
         self.assertTrue(producto["createdAt"].endswith("Z"))
         self.assertEqual(producto["options"][0]["name"], "Storage")
         self.assertEqual(producto["options"][0]["layout"], "stack")
+        self.assertEqual((producto["variants"], producto["priceMin"], producto["priceMax"]), ([], 1199, 1199))
 
     def test_detalle_404_si_no_existe_o_esta_desactivado(self):
         for slug in ["no-existe", self.oculto.slug]:

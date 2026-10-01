@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
-from devconfsite.catalogo.models import Producto
+from devconfsite.catalogo.models import Producto, Variante
 
 CENTAVOS = Decimal("0.01")
 
@@ -61,6 +61,9 @@ class Carrito(models.Model):
 class ItemCarrito(models.Model):
     cart = models.ForeignKey(Carrito, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="items_carrito")
+    variant = models.ForeignKey(
+        Variante, null=True, blank=True, on_delete=models.CASCADE, related_name="items_carrito"
+    )
     slug = models.CharField(max_length=200)
     name = models.CharField(max_length=160)
     price = models.DecimalField(max_digits=12, decimal_places=2)
@@ -151,6 +154,9 @@ class LineaPedido(models.Model):
     order = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="lines")
     product = models.ForeignKey(
         Producto, null=True, blank=True, on_delete=models.SET_NULL, related_name="lineas_pedido"
+    )
+    variant = models.ForeignKey(
+        Variante, null=True, blank=True, on_delete=models.SET_NULL, related_name="lineas_pedido"
     )
     slug = models.CharField(max_length=200)
     name = models.CharField(max_length=160)
