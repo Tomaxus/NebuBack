@@ -1,29 +1,34 @@
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.db.models import Count, DecimalField, Max, Q, Sum, Value
 from django.db.models.functions import Coalesce
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from devconfsite.comun import EsAdmin, OrdenamientoEstable, ReglaDeNegocio, filtrar_por_palabras
+from devconfsite.comun import (
+    EsAdmin,
+    OrdenamientoEstable,
+    ReglaDeNegocio,
+    ThrottleRecuperacionEmail,
+    ThrottleRecuperacionIP,
+    filtrar_por_palabras,
+)
 
+from . import recuperacion
 from .models import Usuario
 from .serializers import (
     AdminSerializer,
     ClienteAdminSerializer,
     LoginSerializer,
     LogoutSerializer,
+    PasswordResetConfirmSerializer,
     PasswordResetSerializer,
     RefreshSerializer,
     RegistroSerializer,
@@ -102,25 +107,39 @@ class MeView(generics.RetrieveAPIView):
 @extend_schema(
     tags=["Autenticación"],
     summary="Olvidé mi contraseña",
-    description="Siempre responde 204, exista o no el email. Si existe, el enlace se envía por correo (en desarrollo se imprime en la consola).",
+    description=(
+        "Siempre responde 204, exista o no el email. Si existe, envía con Resend un enlace de un solo uso "
+        "a {FRONTEND_URL}/reset-password?token=... que vence en 1 hora. Límite: 3 solicitudes por email y por IP cada 15 minutos."
+    ),
     request=PasswordResetSerializer,
     responses={204: None},
 )
 class PasswordResetView(VistaAuth):
+    throttle_classes = [ScopedRateThrottle, ThrottleRecuperacionIP, ThrottleRecuperacionEmail]
+
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        usuario = Usuario.objects.filter(email=serializer.validated_data["email"].strip().lower(), is_active=True).first()
-        if usuario:
-            uid = urlsafe_base64_encode(force_bytes(usuario.pk))
-            token = default_token_generator.make_token(usuario)
-            enlace = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
-            send_mail(
-                "Nebulab: reset your password",
-                f"Hi {usuario.name},\n\nUse this link to choose a new password:\n{enlace}\n",
-                None,
-                [usuario.email],
-            )
+        recuperacion.solicitar_recuperacion(serializer.validated_data["email"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    summary="Guardar la contraseña nueva",
+    description=(
+        "Recibe el token del correo y la contraseña nueva. El token sirve una sola vez. "
+        "Token inexistente, usado o vencido: 400 \"This link is invalid or has expired.\". "
+        "Cierra todas las sesiones abiertas del usuario."
+    ),
+    request=PasswordResetConfirmSerializer,
+    responses={204: None},
+)
+class PasswordResetConfirmView(VistaAuth):
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recuperacion.confirmar_recuperacion(serializer.validated_data["token"], serializer.validated_data["password"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
