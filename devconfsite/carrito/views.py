@@ -28,7 +28,7 @@ DIAS_VALIDOS = {"7": 7, "30": 30, "90": 90}
 
 
 def respuesta_carrito(carrito):
-    carrito = Carrito.objects.prefetch_related("items").get(pk=carrito.pk)
+    carrito = Carrito.objects.prefetch_related("items__variant", "items__product").get(pk=carrito.pk)
     return Response(CarritoSerializer(carrito).data)
 
 
