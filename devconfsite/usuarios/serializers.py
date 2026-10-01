@@ -103,6 +103,11 @@ class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=200, trim_whitespace=True)
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+
 class ClienteAdminSerializer(SerializerBase):
     name = serializers.CharField(
         max_length=120,
