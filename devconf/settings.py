@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "devconfsite.seguridad.PoliticaContenidoMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "devconfsite.middleware.APIEnInglesMiddleware",
@@ -119,6 +120,18 @@ IMPUESTO_TASA = Decimal(os.environ.get("IMPUESTO_TASA", "0.08"))
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
 
+SOLO_HTTPS = os.environ.get("SOLO_HTTPS", str(not DEBUG)) == "True"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = SOLO_HTTPS
+SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365 if SOLO_HTTPS else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SOLO_HTTPS
+SECURE_HSTS_PRELOAD = SOLO_HTTPS
+SESSION_COOKIE_SECURE = SOLO_HTTPS
+CSRF_COOKIE_SECURE = SOLO_HTTPS
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": [
@@ -126,7 +139,7 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
-        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+        "devconfsite.seguridad.ParserSinHTML",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
