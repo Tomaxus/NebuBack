@@ -5,7 +5,7 @@ from devconfsite.comun import normalizar_texto
 
 from .models import Producto
 
-AYUDA_CATEGORIA = "Nombre exacto de la categoría: Iphone, Macbook, Ipad, AirPods, Apple Watch, Apple Vision Pro, Accesories."
+AYUDA_CATEGORIA = "Nombre exacto de la categoría (no distingue mayúsculas), por ejemplo Iphone o Apple Watch. La lista sale de GET /api/categories/."
 
 
 def buscar_en(queryset, texto, campos):
