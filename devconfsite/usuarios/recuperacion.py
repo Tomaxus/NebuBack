@@ -14,7 +14,7 @@ from django.utils import timezone
 from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
-from devconfsite.comun import ReglaDeNegocio
+from devconfsite.comun.excepciones import ReglaDeNegocio
 
 from .models import TokenRecuperacion, Usuario
 

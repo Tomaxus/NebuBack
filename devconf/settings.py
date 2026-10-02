@@ -45,10 +45,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "devconfsite.seguridad.PoliticaContenidoMiddleware",
+    "devconfsite.comun.seguridad.PoliticaContenidoMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "devconfsite.middleware.APIEnInglesMiddleware",
+    "devconfsite.comun.middleware.APIEnInglesMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -139,11 +139,11 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
-        "devconfsite.seguridad.ParserSinHTML",
+        "devconfsite.comun.seguridad.ParserSinHTML",
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
-        "devconfsite.comun.OrdenamientoEstable",
+        "devconfsite.comun.paginacion.OrdenamientoEstable",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -157,7 +157,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min"),
     },
-    "DEFAULT_PAGINATION_CLASS": "devconfsite.comun.Paginacion",
+    "DEFAULT_PAGINATION_CLASS": "devconfsite.comun.paginacion.Paginacion",
     "COERCE_DECIMAL_TO_STRING": False,
 }
 

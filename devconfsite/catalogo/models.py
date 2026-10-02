@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils import timezone
 
-from devconfsite.comun import normalizar_texto
+from devconfsite.comun.texto import normalizar_texto
 
 validate_image = RegexValidator(
     regex=r"^(https://\S+|/(?!/)\S*)$",
