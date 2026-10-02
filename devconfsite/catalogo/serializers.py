@@ -16,12 +16,58 @@ MENSAJE_PRECIO = "Enter a price of 0 or more."
 MENSAJE_STOCK = "Stock must be a whole number, 0 or more."
 MENSAJE_CATEGORIA = "Choose a valid category."
 MENSAJE_NOMBRE = "The product needs a name."
+MENSAJE_NOMBRE_CATEGORIA = "The category needs a name."
+MENSAJE_SLUG = "Use only lowercase letters, numbers and hyphens."
 
 
 class CategoriaSerializer(SerializerBase):
     class Meta:
         model = Categoria
         fields = ["id", "name", "slug"]
+
+
+class CategoriaAdminSerializer(SerializerBase):
+    name = serializers.CharField(
+        max_length=60, error_messages={"blank": MENSAJE_NOMBRE_CATEGORIA, "required": MENSAJE_NOMBRE_CATEGORIA}
+    )
+    slug = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    products_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = Categoria
+        fields = ["id", "name", "slug", "products_count"]
+        read_only_fields = ["id"]
+
+    def otras(self):
+        categorias = Categoria.objects.all()
+        return categorias.exclude(pk=self.instance.pk) if self.instance else categorias
+
+    def validate_name(self, value):
+        value = " ".join(value.split())
+        if self.otras().filter(name__iexact=value).exists():
+            raise serializers.ValidationError("Another category already uses this name.")
+        return value
+
+    def validate(self, attrs):
+        slug = attrs.get("slug")
+        if slug is None and self.instance is not None:
+            return attrs
+        slug = slug or crear_slug(attrs.get("name") or self.instance.name)
+        if not SLUG_VALIDO.match(slug):
+            raise serializers.ValidationError({"slug": [MENSAJE_SLUG]})
+        if self.otras().filter(slug=slug).exists():
+            raise serializers.ValidationError({"slug": ["Another category already uses this slug."]})
+        attrs["slug"] = slug
+        return attrs
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        nombre_anterior = instance.name
+        categoria = super().update(instance, validated_data)
+        if categoria.name != nombre_anterior:
+            for producto in categoria.productos.select_related("category"):
+                producto.save(update_fields=["search_text"])
+        return categoria
 
 
 class OpcionSerializer(serializers.Serializer):
@@ -219,7 +265,7 @@ class ProductoSerializer(SerializerBase):
             nombre = attrs.get("name") or (self.instance.name if self.instance else "")
             slug = crear_slug(nombre)
         if not SLUG_VALIDO.match(slug):
-            raise serializers.ValidationError({"slug": ["Use only lowercase letters, numbers and hyphens."]})
+            raise serializers.ValidationError({"slug": [MENSAJE_SLUG]})
         repetidos = Producto.objects.filter(slug=slug)
         if self.instance is not None:
             repetidos = repetidos.exclude(pk=self.instance.pk)

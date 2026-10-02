@@ -39,11 +39,11 @@
 
 | | |
 |---|---|
-| 🛍️ **Catálogo** | 7 categorías y 31 productos con opciones (capacidad, color, talla…). Búsqueda sin tildes, filtros, orden y paginación |
+| 🛍️ **Catálogo** | Categorías y productos con opciones (capacidad, color, talla…). Búsqueda sin tildes, filtros, orden y paginación |
 | 👤 **Cuentas** | Registro e inicio de sesión de clientes y administradores con **JWT**: tokens que se renuevan y se anulan al cerrar sesión |
 | 🛒 **Carrito** | Un carrito por cliente; subtotal, **impuesto del 8 %** y total calculados en el servidor |
 | 💳 **Checkout** | Pedido `NB-1001…` en una sola transacción: valida y descuenta stock, guarda la dirección y los 4 últimos dígitos de la tarjeta (el pago es simulado) |
-| 🧑‍💼 **Administración** | CRUD de productos, clientes y administradores; pedidos con cinco estados que ajustan el stock |
+| 🧑‍💼 **Administración** | CRUD de categorías, productos, clientes y administradores; pedidos con cinco estados que ajustan el stock |
 | 📊 **Dashboard** | Ingresos, pedidos, ticket promedio, series diarias, ventas por estado y categoría, top de productos y stock bajo |
 | 📘 **Documentación** | OpenAPI 3 generada del código y Swagger UI para probar cada endpoint desde el navegador |
 
@@ -181,6 +181,7 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 | `POST` | `/auth/logout/` | 🔑 | Anula el token de renovación |
 | `GET` | `/auth/me/` | 🔑 | Usuario actual |
 | `POST` | `/auth/password-reset/` | 🌐 | Envía el correo de recuperación |
+| `POST` | `/auth/password-reset/confirm/` | 🌐 | Guarda la contraseña nueva con el token del correo |
 
 </details>
 
@@ -189,7 +190,7 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
-| `GET` | `/categories/` | 🌐 | Las 7 categorías |
+| `GET` | `/categories/` | 🌐 | Todas las categorías |
 | `GET` | `/products/` | 🌐 | Productos visibles, con filtros y 9 por página |
 | `GET` | `/products/{slug}/` | 🌐 | Detalle de un producto |
 
@@ -209,10 +210,12 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 </details>
 
 <details>
-<summary><b>Administración</b> (17 endpoints)</summary>
+<summary><b>Administración</b> (22 endpoints)</summary>
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
+| `GET` `POST` | `/admin/categories/` | 🛡️ | Lista categorías con su número de productos y crea categorías |
+| `GET` `PATCH` `DELETE` | `/admin/categories/{id}/` | 🛡️ | Ve, edita y borra una categoría (solo si no tiene productos) |
 | `GET` `POST` | `/admin/products/` | 🛡️ | Lista (con desactivados) y crea productos |
 | `GET` `PATCH` `DELETE` | `/admin/products/{id}/` | 🛡️ | Ve, edita y borra un producto |
 | `GET` `POST` | `/admin/customers/` | 🛡️ | Lista clientes con sus estadísticas y crea clientes |
@@ -225,7 +228,7 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 
 </details>
 
-**31 endpoints en total.** Parámetros, cuerpos y respuestas: en [Swagger](https://nebuback.onrender.com/api/docs/).
+**37 endpoints en total.** Parámetros, cuerpos y respuestas: en [Swagger](https://nebuback.onrender.com/api/docs/).
 
 <details>
 <summary><b>Ejemplo: iniciar sesión y ver el carrito</b></summary>

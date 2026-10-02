@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -5,11 +6,11 @@ from rest_framework import generics
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
 
-from devconfsite.comun import EsAdmin, Paginacion
+from devconfsite.comun import EsAdmin, Paginacion, ReglaDeNegocio, filtrar_por_palabras
 
 from .filters import ProductoAdminFilter, ProductoFilter
 from .models import Categoria, Producto
-from .serializers import CategoriaSerializer, ProductoSerializer
+from .serializers import CategoriaAdminSerializer, CategoriaSerializer, ProductoSerializer
 
 
 class PaginacionCatalogo(Paginacion):
@@ -30,7 +31,7 @@ def orden_param(valores, defecto):
     )
 
 
-@extend_schema(tags=["Catálogo"], summary="Listar categorías", description="Devuelve las 7 categorías de la tienda. No está paginado.")
+@extend_schema(tags=["Catálogo"], summary="Listar categorías", description="Devuelve todas las categorías de la tienda. No está paginado.")
 class CategoriaListView(VistaPublica, generics.ListAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
@@ -105,3 +106,65 @@ class ProductoAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Producto.objects.select_related("category").prefetch_related("variants")
     serializer_class = ProductoSerializer
     http_method_names = ["get", "patch", "delete", "head", "options"]
+
+
+def categorias_con_conteo():
+    return Categoria.objects.annotate(products_count=Count("productos"))
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Listar categorías (admin)",
+        description="Todas las categorías con productsCount (cuántos productos tiene cada una). 10 por página.",
+        parameters=[
+            OpenApiParameter("search", OpenApiTypes.STR, description="Palabras contra nombre y slug."),
+            orden_param(["id", "name", "products_count"], "id"),
+        ],
+    ),
+    post=extend_schema(summary="Crear categoría", description="Si slug viene vacío se genera desde el nombre. El nombre no se puede repetir."),
+)
+@extend_schema(tags=["Admin · Categorías"])
+class CategoriaAdminListView(generics.ListCreateAPIView):
+    permission_classes = [EsAdmin]
+    serializer_class = CategoriaAdminSerializer
+    ordering_fields = ["id", "name", "products_count"]
+    ordering = ["id"]
+
+    def get_queryset(self):
+        categorias = categorias_con_conteo()
+        buscar = self.request.query_params.get("search")
+        if buscar:
+            categorias = filtrar_por_palabras(categorias, buscar, ["name", "slug"])
+        return categorias
+
+    def perform_create(self, serializer):
+        serializer.instance = categorias_con_conteo().get(pk=serializer.save().pk)
+
+
+@extend_schema_view(
+    get=extend_schema(summary="Ver categoría"),
+    patch=extend_schema(
+        summary="Editar categoría",
+        description="Actualización parcial de name o slug. Los productos de la categoría quedan con el nombre nuevo.",
+    ),
+    delete=extend_schema(
+        summary="Borrar categoría",
+        description="Solo se puede borrar si no tiene productos; si tiene, responde 400 con detail.",
+    ),
+)
+@extend_schema(tags=["Admin · Categorías"])
+class CategoriaAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [EsAdmin]
+    serializer_class = CategoriaAdminSerializer
+    http_method_names = ["get", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return categorias_con_conteo()
+
+    def perform_update(self, serializer):
+        serializer.instance = categorias_con_conteo().get(pk=serializer.save().pk)
+
+    def perform_destroy(self, instance):
+        if instance.productos.exists():
+            raise ReglaDeNegocio("This category has products. Move them to another category or delete them first.")
+        instance.delete()
