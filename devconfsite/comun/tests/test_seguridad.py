@@ -1,10 +1,10 @@
 from django.test import Client, override_settings
 
 from devconfsite.catalogo.models import Categoria
+from devconfsite.comun.pruebas import CLAVE, BaseAPITest
 from devconfsite.usuarios.models import Usuario
-from devconfsite.usuarios.tests import CLAVE, BaseAPITest
 
-from .seguridad import MENSAJE_HTML
+from ..seguridad import MENSAJE_HTML
 
 PRODUCTO = {
     "name": "Funda de prueba", "category": "Accesories", "price": 49, "stock": 3,

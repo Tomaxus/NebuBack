@@ -151,12 +151,25 @@ NebuBack/
 │   ├── settings.py             Todo se configura por variables de entorno
 │   └── urls.py                 /admin/, /api/, /api/docs/, /api/schema/
 ├── devconfsite/
-│   ├── comun.py                Paginación, permisos, fechas UTC y utilidades compartidas
-│   ├── middleware.py           Mensajes de la API en inglés
-│   ├── usuarios/               Usuario, autenticación JWT, clientes y admins
-│   ├── catalogo/               Categoria, Producto, filtros y comando seed_catalog
-│   └── carrito/                Carrito, pedidos, dashboard
-│       └── servicios.py        Reglas del negocio: carrito, checkout, estados y métricas
+│   ├── comun/                  Código compartido por las tres apps
+│   │   ├── seguridad.py        Rechazo de HTML (XSS) y Content-Security-Policy
+│   │   ├── paginacion.py       Paginación y orden estable
+│   │   ├── permisos.py         Permiso EsAdmin
+│   │   ├── campos.py           Dinero y fechas UTC en los serializers
+│   │   ├── limites.py          Límite de intentos de recuperación de contraseña
+│   │   ├── texto.py            Slugs y búsqueda sin tildes
+│   │   ├── middleware.py       Mensajes de la API en inglés
+│   │   ├── pruebas.py          Clases base de los tests
+│   │   └── tests/              Tests de HTTPS, XSS y CSRF
+│   ├── usuarios/               Usuario, autenticación JWT, recuperación de contraseña, clientes y admins
+│   │   └── views/              auth.py (público y sesión) · admin.py (panel)
+│   ├── catalogo/               Categoria, Producto, Variante, filtros y comando seed_catalog
+│   │   ├── variantes.py        Validación de combinaciones
+│   │   └── views/              publico.py (tienda) · admin.py (categorías y productos)
+│   └── carrito/                Carrito, pedidos y dashboard
+│       ├── servicios/          Reglas del negocio: carrito.py · pedidos.py · dashboard.py
+│       ├── serializers/        tienda.py · admin.py
+│       └── views/              tienda.py (carrito y checkout) · admin.py (pedidos y dashboard)
 ├── build.sh                    Build de Render: dependencias, estáticos y migraciones
 ├── render.yaml                 Definición del servicio en Render
 └── requirements.txt            Dependencias con versiones fijas
@@ -330,11 +343,12 @@ DATABASE_URL="sqlite://:memory:" python manage.py test
 
 | Área | Tests | Cubre |
 |---|:---:|---|
-| Catálogo | 11 | Formato, filtros, búsqueda sin tildes, orden, paginación estable, errores 404 |
-| Autenticación y usuarios | 18 | Registro, login, renovación y anulación de tokens, límite de intentos, clientes y admins |
-| Carrito, pedidos y admin | 25 | Opciones y stock, checkout completo, cliente bloqueado, estados de pedido, dashboard |
+| Autenticación y usuarios | 28 | Registro, login, renovación y anulación de tokens, recuperación de contraseña, límite de intentos, clientes y admins |
+| Catálogo | 35 | Formato, filtros, búsqueda sin tildes, paginación, CRUD de categorías y productos, variantes |
+| Carrito y pedidos | 21 | Opciones y stock, checkout completo, cliente bloqueado, estados de pedido, dashboard |
+| Seguridad | 10 | Redirección a HTTPS y HSTS, rechazo de HTML, cabeceras, sesión que no viaja en cookies, CSRF del admin, CORS |
 
-Las pruebas usan una base de datos en memoria y nunca tocan la de producción.
+Cada app tiene su carpeta `tests/`, con un archivo por tema. Las pruebas usan una base de datos en memoria y nunca tocan la de producción.
 
 ---
 

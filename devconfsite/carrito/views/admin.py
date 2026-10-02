@@ -4,103 +4,25 @@ from django.db.models import Sum
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from devconfsite.comun import EsAdmin, OrdenamientoEstable, filtrar_por_palabras
+from devconfsite.comun.paginacion import OrdenamientoEstable
+from devconfsite.comun.permisos import EsAdmin
+from devconfsite.comun.texto import filtrar_por_palabras
 
-from . import servicios
-from .models import Carrito, Pedido
-from .serializers import (
-    AgregarItemSerializer,
-    CambiarCantidadSerializer,
+from ..models import Pedido
+from ..serializers.admin import (
     CambiarEstadoSerializer,
-    CarritoSerializer,
-    CheckoutSerializer,
     DashboardSerializer,
     ListaPedidosAdminSerializer,
     PedidoAdminSerializer,
-    PedidoSerializer,
 )
+from ..servicios.dashboard import construir_dashboard
+from ..servicios.pedidos import cambiar_estado_pedido, conteo_por_estado, resumen_pedidos
 
 DIAS_VALIDOS = {"7": 7, "30": 30, "90": 90}
-
-
-def respuesta_carrito(carrito):
-    carrito = Carrito.objects.prefetch_related("items__variant", "items__product").get(pk=carrito.pk)
-    return Response(CarritoSerializer(carrito).data)
-
-
-@extend_schema(
-    tags=["Carrito"],
-    summary="Ver mi carrito",
-    description="Devuelve el carrito activo del usuario con subtotal, impuesto (8 %) y total ya calculados. Si no existe, lo crea vacío.",
-    responses=CarritoSerializer,
-)
-class CarritoView(APIView):
-    def get(self, request):
-        return respuesta_carrito(servicios.carrito_activo(request.user))
-
-
-@extend_schema(
-    tags=["Carrito"],
-    summary="Añadir al carrito",
-    description=(
-        "Suma 1 unidad del producto con las opciones elegidas. Deben venir todas las opciones del producto. "
-        "Mismo producto con las mismas opciones suma a la línea existente. Devuelve el carrito completo."
-    ),
-    request=AgregarItemSerializer,
-    responses=CarritoSerializer,
-)
-class ItemCarritoCreateView(APIView):
-    def post(self, request):
-        serializer = AgregarItemSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        carrito = servicios.agregar_al_carrito(request.user, serializer.validated_data["slug"], serializer.validated_data["options"])
-        return respuesta_carrito(carrito)
-
-
-@extend_schema_view(
-    patch=extend_schema(
-        summary="Cambiar cantidad",
-        description="Recibe la cantidad final. 0 elimina la línea. Devuelve el carrito completo.",
-        request=CambiarCantidadSerializer,
-        responses=CarritoSerializer,
-    ),
-    delete=extend_schema(summary="Quitar del carrito", request=None, responses=CarritoSerializer),
-)
-@extend_schema(tags=["Carrito"])
-class ItemCarritoDetailView(APIView):
-    def patch(self, request, pk):
-        serializer = CambiarCantidadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return respuesta_carrito(servicios.cambiar_cantidad(request.user, pk, serializer.validated_data["quantity"]))
-
-    def delete(self, request, pk):
-        return respuesta_carrito(servicios.quitar_del_carrito(request.user, pk))
-
-
-@extend_schema(
-    tags=["Pedidos"],
-    summary="Hacer checkout",
-    description=(
-        "Crea el pedido con los productos del carrito del usuario, descuenta el stock y vacía el carrito. "
-        "El pago es simulado: solo se reciben los 4 últimos dígitos de la tarjeta. "
-        "Cliente bloqueado: 403. Carrito vacío: 400."
-    ),
-    request=CheckoutSerializer,
-    responses={201: PedidoSerializer},
-)
-class CheckoutView(APIView):
-    def post(self, request):
-        serializer = CheckoutSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        pedido = servicios.hacer_checkout(
-            request.user, serializer.validated_data["shipping_address"], serializer.validated_data["card_last4"]
-        )
-        pedido = Pedido.objects.prefetch_related("lines").get(pk=pedido.pk)
-        return Response(PedidoSerializer(pedido).data, status=status.HTTP_201_CREATED)
 
 
 def pedidos_filtrados_por_rango(params):
@@ -167,8 +89,8 @@ class PedidoAdminListView(generics.ListAPIView):
             "count": datos["count"],
             "next": datos["next"],
             "previous": datos["previous"],
-            "summary": servicios.resumen_pedidos(self.filtrados()),
-            "status_counts": servicios.conteo_por_estado(pedidos_filtrados_por_rango(request.query_params)),
+            "summary": resumen_pedidos(self.filtrados()),
+            "status_counts": conteo_por_estado(pedidos_filtrados_por_rango(request.query_params)),
             "results": datos["results"],
         }
         return respuesta
@@ -194,7 +116,7 @@ class PedidoAdminDetailView(generics.RetrieveAPIView):
         pedido = self.get_object()
         serializer = CambiarEstadoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        servicios.cambiar_estado_pedido(pedido, serializer.validated_data["status"])
+        cambiar_estado_pedido(pedido, serializer.validated_data["status"])
         return Response(PedidoAdminSerializer(self.get_queryset().get(pk=pedido.pk)).data)
 
 
@@ -210,4 +132,4 @@ class DashboardView(APIView):
 
     def get(self, request):
         dias = DIAS_VALIDOS.get(request.query_params.get("days", ""), 30)
-        return Response(DashboardSerializer(servicios.construir_dashboard(dias)).data)
+        return Response(DashboardSerializer(construir_dashboard(dias)).data)

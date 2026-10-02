@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from devconfsite.comun import DineroField, FechaUTCField, SerializerBase
+from devconfsite.comun.campos import DineroField, FechaUTCField, SerializerBase
 
 from .models import Usuario
 

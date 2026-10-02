@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from devconfsite.comun import normalizar_texto
+from devconfsite.comun.texto import normalizar_texto
 
 from .models import Producto
 
