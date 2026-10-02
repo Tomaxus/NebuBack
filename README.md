@@ -307,6 +307,18 @@ La base de datos garantiza las reglas clave:
 
 ---
 
+## 🔒 Seguridad
+
+| Medida | Cómo se cumple | Cómo demostrarlo |
+|---|---|---|
+| **HTTPS** | Render termina TLS; Django redirige todo HTTP a HTTPS (`SECURE_SSL_REDIRECT`), envía HSTS de 1 año y marca las cookies como `Secure` | `curl -I http://nebuback.onrender.com/api/categories/` → `301` a `https://`; la respuesta HTTPS trae `Strict-Transport-Security` |
+| **XSS** | Todo texto con etiquetas HTML se rechaza antes de guardarse; la API solo responde JSON con `nosniff` y una `Content-Security-Policy` que no permite cargar scripts | Crear un producto con `"description": "<script>alert(1)</script>"` → `400 {"description": ["HTML tags are not allowed."]}` |
+| **CSRF** | La sesión viaja en el encabezado `Authorization: Bearer`, nunca en cookies, así que otro sitio no puede enviar peticiones a nombre del usuario; CORS solo admite los dominios del frontend y no permite credenciales; el admin de Django usa `CsrfViewMiddleware` | Un `POST` sin token responde `401`; un preflight desde un origen ajeno no recibe `Access-Control-Allow-Origin` |
+
+Además: contraseñas con hash PBKDF2 y validadores de Django, tokens JWT con rotación y lista negra, límite de intentos en login y recuperación de contraseña, y `X-Frame-Options: DENY`.
+
+---
+
 ## ✅ Pruebas
 
 ```bash
