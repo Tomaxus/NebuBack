@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
+  <a href="https://www.nebulab.digital"><img alt="Tienda en vivo" src="https://img.shields.io/badge/Tienda-nebulab.digital-000000?style=for-the-badge&logo=vercel&logoColor=white"></a>
   <a href="https://nebuback.onrender.com/api/docs/"><img alt="Swagger" src="https://img.shields.io/badge/Swagger-docs-85EA2D?style=for-the-badge&logo=swagger&logoColor=black"></a>
-  <a href="https://nebuback.onrender.com/api/products/"><img alt="Render" src="https://img.shields.io/badge/Render-en%20vivo-46E3B7?style=for-the-badge&logo=render&logoColor=black"></a>
-  <a href="https://nebulab-frontend.vercel.app"><img alt="Frontend" src="https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white"></a>
+  <a href="https://nebuback.onrender.com/api/products/"><img alt="API en Render" src="https://img.shields.io/badge/API-en%20vivo-46E3B7?style=for-the-badge&logo=render&logoColor=black"></a>
 </p>
 
 <p align="center">
@@ -15,21 +15,35 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=flat-square&logo=postgresql&logoColor=white">
   <img alt="JWT" src="https://img.shields.io/badge/Auth-JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white">
   <img alt="OpenAPI" src="https://img.shields.io/badge/OpenAPI-3-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-54%20passing-2EA44F?style=flat-square">
+  <img alt="Resend" src="https://img.shields.io/badge/Correo-Resend-000000?style=flat-square&logo=resend&logoColor=white">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-94%20passing-2EA44F?style=flat-square">
 </p>
 
 <p align="center">
   <b>NebuBack</b> es el backend de <b>Nebulab</b>, una tienda en línea de productos Apple.<br>
-  Expone el catálogo, las cuentas, el carrito, los pedidos y el panel de administración<br>
+  Expone el catálogo con variantes, las cuentas, el carrito, los pedidos y el panel de administración<br>
   como una API REST documentada que consume el frontend en Next.js.
 </p>
 
+<table align="center">
+  <tr>
+    <td align="center"><h3>37</h3><sub>operaciones REST</sub></td>
+    <td align="center"><h3>94</h3><sub>pruebas automáticas</sub></td>
+    <td align="center"><h3>9</h3><sub>tablas del dominio</sub></td>
+    <td align="center"><h3>3/3</h3><sub>medidas de seguridad<br>(HTTPS · XSS · CSRF)</sub></td>
+    <td align="center"><h3>100 %</h3><sub>desplegado y<br>conectado al frontend</sub></td>
+  </tr>
+</table>
+
 <p align="center">
+  <a href="#-pruébala-en-30-segundos">Pruébala</a> ·
   <a href="#-inicio-rápido">Inicio rápido</a> ·
-  <a href="#-arquitectura">Arquitectura</a> ·
+  <a href="#️-arquitectura">Arquitectura</a> ·
+  <a href="#-flujos-clave">Flujos</a> ·
   <a href="#-endpoints">Endpoints</a> ·
-  <a href="#-modelo-de-datos">Modelo de datos</a> ·
-  <a href="#-despliegue">Despliegue</a> ·
+  <a href="#️-modelo-de-datos">Modelo de datos</a> ·
+  <a href="#-seguridad">Seguridad</a> ·
+  <a href="#️-estado-del-proyecto">Estado</a> ·
   <a href="#-equipo">Equipo</a>
 </p>
 
@@ -39,11 +53,13 @@
 
 | | |
 |---|---|
-| 🛍️ **Catálogo** | Categorías y productos con opciones (capacidad, color, talla…). Búsqueda sin tildes, filtros, orden y paginación |
-| 👤 **Cuentas** | Registro e inicio de sesión de clientes y administradores con **JWT**: tokens que se renuevan y se anulan al cerrar sesión |
+| 🛍️ **Catálogo** | Categorías administrables y productos con atributos (almacenamiento, color, talla…). Búsqueda sin tildes, filtros, orden y paginación |
+| 🎛️ **Variantes** | Cada combinación (por ejemplo, *256GB · Black*) tiene **su propio precio y stock**; el producto muestra el precio "desde" y el stock total |
+| 👤 **Cuentas** | Registro e inicio de sesión de clientes y administradores con **JWT**: tokens que rotan en cada renovación y se anulan al cerrar sesión |
+| 📧 **Recuperación de contraseña** | Enlace de un solo uso enviado con **Resend** desde `noreply@nebulab.digital`; el token se guarda solo como hash y vence en 1 hora |
 | 🛒 **Carrito** | Un carrito por cliente; subtotal, **impuesto del 8 %** y total calculados en el servidor |
-| 💳 **Checkout** | Pedido `NB-1001…` en una sola transacción: valida y descuenta stock, guarda la dirección y los 4 últimos dígitos de la tarjeta (el pago es simulado) |
-| 🧑‍💼 **Administración** | CRUD de categorías, productos, clientes y administradores; pedidos con cinco estados que ajustan el stock |
+| 💳 **Checkout** | Pedido `NB-1001…` en una sola transacción con bloqueo de filas: valida y descuenta el stock de cada variante (el pago es simulado) |
+| 🧑‍💼 **Administración** | CRUD de categorías, productos con variantes, clientes y administradores; pedidos con cinco estados que devuelven o descuentan el stock |
 | 📊 **Dashboard** | Ingresos, pedidos, ticket promedio, series diarias, ventas por estado y categoría, top de productos y stock bajo |
 | 📘 **Documentación** | OpenAPI 3 generada del código y Swagger UI para probar cada endpoint desde el navegador |
 
@@ -53,13 +69,59 @@
 
 | | URL |
 |---|---|
-| **API** | https://nebuback.onrender.com/api/ |
-| **Swagger UI** | https://nebuback.onrender.com/api/docs/ |
-| **Esquema OpenAPI** | https://nebuback.onrender.com/api/schema/ |
-| **Frontend** | https://nebulab-frontend.vercel.app |
+| 🛍️ **Tienda** | https://www.nebulab.digital |
+| 🧑‍💼 **Panel de administración** | https://www.nebulab.digital/login-admin |
+| 🔌 **API** | https://nebuback.onrender.com/api/ |
+| 📘 **Swagger UI** | https://nebuback.onrender.com/api/docs/ |
+| 📄 **Esquema OpenAPI** | https://nebuback.onrender.com/api/schema/ |
 
 > [!NOTE]
-> El servicio usa el plan gratuito de Render: después de 15 minutos sin uso se duerme y **la primera petición tarda unos 50 segundos**.
+> La API usa el plan gratuito de Render: después de 15 minutos sin uso se duerme y **la primera petición tarda cerca de un minuto**. Las siguientes responden al instante.
+
+---
+
+## 🧪 Pruébala en 30 segundos
+
+No necesitas cuenta para el catálogo:
+
+```bash
+API=https://nebuback.onrender.com/api
+
+curl "$API/categories/"                                   # las categorías
+curl "$API/products/?category=Iphone&ordering=price"      # iPhones del más barato al más caro
+curl "$API/products/?search=pro&is_new=true"              # búsqueda + filtro de novedades
+curl "$API/products/iphone-17/"                           # detalle con sus variantes
+```
+
+<details>
+<summary><b>Respuesta de <code>GET /products/iphone-17/</code> (resumida)</b></summary>
+
+```json
+{
+  "slug": "iphone-17",
+  "name": "iPhone 17",
+  "category": "Iphone",
+  "price": 799.0,
+  "priceMin": 799.0,
+  "priceMax": 999.0,
+  "stock": 144,
+  "options": [
+    { "name": "Storage", "layout": "stack", "values": ["256GB", "512GB"] },
+    { "name": "Color", "layout": "wrap", "values": ["Black", "White", "Mist Blue", "Sage", "Lavender"] }
+  ],
+  "variants": [
+    { "id": 186, "options": [{ "name": "Storage", "value": "256GB" }, { "name": "Color", "value": "Black" }], "price": 799.0, "stock": 23, "sku": "" },
+    { "id": 187, "options": [{ "name": "Storage", "value": "256GB" }, { "name": "Color", "value": "White" }], "price": 799.0, "stock": 19, "sku": "" }
+  ],
+  "isNew": false,
+  "recommended": true,
+  "status": "live"
+}
+```
+
+`price` es el precio más bajo de las variantes y `stock` es la suma de todas. El carrito y el checkout usan el precio y el stock de la variante elegida.
+
+</details>
 
 ---
 
@@ -84,16 +146,17 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 DATABASE_URL=postgresql://usuario:clave@host/neondb?sslmode=require
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+FRONTEND_URL=http://localhost:3000
 ```
 
 > [!TIP]
-> Si dejas `DATABASE_URL` vacía, el proyecto usa SQLite local, útil para probar sin conexión a Neon.
+> Si dejas `DATABASE_URL` vacía, el proyecto usa SQLite local. Sin `RESEND_API_KEY`, los correos de recuperación se imprimen en la consola en lugar de enviarse: ideal para desarrollar.
 
 Prepara la base de datos y arranca:
 
 ```bash
 python manage.py migrate            # crea las tablas
-python manage.py seed_catalog       # carga las 7 categorías y los 31 productos
+python manage.py seed_catalog       # carga 7 categorías y 31 productos de ejemplo
 python manage.py createsuperuser    # crea tu usuario administrador
 python manage.py runserver
 ```
@@ -110,7 +173,10 @@ Abre **http://127.0.0.1:8000/api/docs/** y prueba la API.
 | `ALLOWED_HOSTS` | | Dominios separados por coma. En Render se agrega el dominio del servicio automáticamente |
 | `DATABASE_URL` | | Cadena de conexión de PostgreSQL. Sin ella se usa SQLite |
 | `CORS_ALLOWED_ORIGINS` | | Orígenes del frontend autorizados, separados por coma |
-| `FRONTEND_URL` | | Base del enlace del correo de recuperación de contraseña |
+| `FRONTEND_URL` | | Base del enlace del correo de recuperación (por defecto `http://localhost:3000`) |
+| `RESEND_API_KEY` | | Clave de Resend. Sin ella el correo se envía con el backend de Django (consola) |
+| `RESET_PASSWORD_FROM` | | Remitente del correo (por defecto `Nebulab <noreply@nebulab.digital>`) |
+| `RESET_TOKEN_MINUTOS` | | Vigencia del enlace de recuperación (por defecto `60`) |
 | `IMPUESTO_TASA` | | Tasa de impuesto (por defecto `0.08`) |
 | `AUTH_THROTTLE_RATE` | | Límite de intentos de login y registro (por defecto `10/min`) |
 
@@ -122,10 +188,12 @@ Abre **http://127.0.0.1:8000/api/docs/** y prueba la API.
 
 ```mermaid
 flowchart LR
-    U(["👤 Navegador"]) --> F["Frontend<br/>Next.js · Vercel"]
-    F -- "HTTPS · JSON · JWT" --> A["API REST<br/>Django + DRF · Render"]
-    A -- "TLS" --> D[("PostgreSQL<br/>Neon")]
+    U(["👤 Navegador"]) -- "HTTPS" --> F["Frontend<br/>Next.js · Vercel<br/>www.nebulab.digital"]
+    F -- "HTTPS · JSON · Bearer JWT" --> A["API REST<br/>Django + DRF · Gunicorn<br/>Render"]
+    A -- "TLS" --> D[("PostgreSQL 18<br/>Neon")]
+    A -- "API" --> R["📧 Resend<br/>correo transaccional"]
     A -. "OpenAPI 3" .-> S["Swagger UI<br/>/api/docs/"]
+    G["GitHub · main"] -. "deploy automático" .-> A
 ```
 
 Frontend y backend son proyectos independientes que se comunican solo por la API. El backend no renderiza vistas de la tienda.
@@ -134,11 +202,12 @@ Frontend y backend son proyectos independientes que se comunican solo por la API
 |---|---|
 | Lenguaje | Python 3.13 |
 | Framework | Django 5.2 LTS · Django REST Framework 3.18 |
-| Autenticación | JWT con `djangorestframework-simplejwt` y lista negra de tokens |
+| Autenticación | JWT con `djangorestframework-simplejwt`, rotación y lista negra de tokens |
 | Filtros | `django-filter` y búsqueda sin tildes |
 | Formato | `djangorestframework-camel-case`: JSON en camelCase, parámetros en snake_case |
 | Documentación | `drf-spectacular`: OpenAPI 3 y Swagger UI |
-| Base de datos | PostgreSQL en Neon (`dj-database-url`, TLS) |
+| Base de datos | PostgreSQL 18 en Neon (`dj-database-url`, TLS) |
+| Correo | Resend, con el dominio verificado `nebulab.digital` |
 | Servidor | Gunicorn + WhiteNoise para los estáticos |
 | Despliegue | Render (Blueprint en `render.yaml`) |
 
@@ -161,7 +230,8 @@ NebuBack/
 │   │   ├── middleware.py       Mensajes de la API en inglés
 │   │   ├── pruebas.py          Clases base de los tests
 │   │   └── tests/              Tests de HTTPS, XSS y CSRF
-│   ├── usuarios/               Usuario, autenticación JWT, recuperación de contraseña, clientes y admins
+│   ├── usuarios/               Usuario, autenticación JWT, clientes y admins
+│   │   ├── recuperacion.py     Recuperación de contraseña con Resend
 │   │   └── views/              auth.py (público y sesión) · admin.py (panel)
 │   ├── catalogo/               Categoria, Producto, Variante, filtros y comando seed_catalog
 │   │   ├── variantes.py        Validación de combinaciones
@@ -175,6 +245,86 @@ NebuBack/
 └── requirements.txt            Dependencias con versiones fijas
 ```
 
+Las vistas solo validan y responden; las reglas que tocan varias tablas viven en `servicios/` para poder probarlas por separado.
+
+</details>
+
+---
+
+## 🔄 Flujos clave
+
+### Checkout
+
+Todo ocurre en **una sola transacción**: si algo falla, no se crea el pedido ni se toca el stock.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant F as Frontend
+    participant A as API
+    participant DB as PostgreSQL
+    C->>F: Confirma dirección y tarjeta
+    F->>A: POST /api/orders/ {shippingAddress, cardLast4}
+    A->>DB: BEGIN · SELECT … FOR UPDATE (carrito, productos, variantes)
+    alt Cliente bloqueado, carrito vacío o sin stock
+        A-->>F: 400 / 403 con el motivo
+    else Todo disponible
+        A->>DB: INSERT pedido NB-10xx + líneas (copia de los datos)
+        A->>DB: UPDATE stock de cada variante · carrito → converted
+        A->>DB: COMMIT
+        A-->>F: 201 {number, subtotal, tax, total, lines}
+        F-->>C: Confirmación del pedido
+    end
+```
+
+<details>
+<summary><b>Recuperación de contraseña</b></summary>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant F as Frontend
+    participant A as API
+    participant R as Resend
+    C->>F: Escribe su correo
+    F->>A: POST /api/auth/password-reset/
+    opt La cuenta existe
+        A->>A: Token aleatorio · guarda solo su hash SHA-256 (1 h)
+        A->>R: Envía el enlace /reset-password?token=…
+        R-->>C: Correo desde noreply@nebulab.digital
+    end
+    A-->>F: 204 siempre (no revela si el correo existe)
+    C->>F: Abre el enlace y escribe la contraseña nueva
+    F->>A: POST /api/auth/password-reset/confirm/
+    A-->>F: 204 · token usado y todas las sesiones cerradas
+```
+
+Máximo 3 solicitudes cada 15 minutos por correo y por IP.
+
+</details>
+
+<details>
+<summary><b>Ciclo de vida de un pedido</b></summary>
+
+```mermaid
+stateDiagram-v2
+    state "Vigente · cuenta como ingreso" as Vigente {
+        paid --> shipped : enviar
+        shipped --> delivered : entregar
+    }
+    state "Anulado · stock repuesto" as Anulado {
+        cancelled
+        refunded
+    }
+    [*] --> paid : checkout · descuenta stock
+    Vigente --> Anulado : cancelar o reembolsar · repone stock
+    Anulado --> Vigente : reactivar · vuelve a descontar
+```
+
+El administrador puede asignar cualquiera de los cinco estados; el stock se ajusta solo al cruzar entre los dos grupos.
+
 </details>
 
 ---
@@ -184,7 +334,7 @@ NebuBack/
 Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión · 🛡️ solo administradores.
 
 <details open>
-<summary><b>Autenticación</b></summary>
+<summary><b>Autenticación</b> (7)</summary>
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
@@ -199,23 +349,23 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 </details>
 
 <details open>
-<summary><b>Catálogo</b></summary>
+<summary><b>Catálogo</b> (3)</summary>
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
 | `GET` | `/categories/` | 🌐 | Todas las categorías |
 | `GET` | `/products/` | 🌐 | Productos visibles, con filtros y 9 por página |
-| `GET` | `/products/{slug}/` | 🌐 | Detalle de un producto |
+| `GET` | `/products/{slug}/` | 🌐 | Detalle de un producto con sus variantes |
 
 </details>
 
 <details open>
-<summary><b>Carrito y pedidos</b></summary>
+<summary><b>Carrito y pedidos</b> (5)</summary>
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
 | `GET` | `/cart/` | 🔑 | Carrito con subtotal, impuesto y total |
-| `POST` | `/cart/items/` | 🔑 | Agrega 1 unidad con las opciones elegidas |
+| `POST` | `/cart/items/` | 🔑 | Agrega 1 unidad de la combinación elegida |
 | `PATCH` | `/cart/items/{id}/` | 🔑 | Cambia la cantidad (0 elimina) |
 | `DELETE` | `/cart/items/{id}/` | 🔑 | Quita una línea |
 | `POST` | `/orders/` | 🔑 | Checkout: crea el pedido y descuenta el stock |
@@ -223,13 +373,13 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 </details>
 
 <details>
-<summary><b>Administración</b> (22 endpoints)</summary>
+<summary><b>Administración</b> (22)</summary>
 
 | Método | Ruta | | Descripción |
 |---|---|:---:|---|
 | `GET` `POST` | `/admin/categories/` | 🛡️ | Lista categorías con su número de productos y crea categorías |
 | `GET` `PATCH` `DELETE` | `/admin/categories/{id}/` | 🛡️ | Ve, edita y borra una categoría (solo si no tiene productos) |
-| `GET` `POST` | `/admin/products/` | 🛡️ | Lista (con desactivados) y crea productos |
+| `GET` `POST` | `/admin/products/` | 🛡️ | Lista (con desactivados) y crea productos con sus variantes |
 | `GET` `PATCH` `DELETE` | `/admin/products/{id}/` | 🛡️ | Ve, edita y borra un producto |
 | `GET` `POST` | `/admin/customers/` | 🛡️ | Lista clientes con sus estadísticas y crea clientes |
 | `GET` `PATCH` `DELETE` | `/admin/customers/{id}/` | 🛡️ | Ve, edita, bloquea y borra un cliente |
@@ -241,10 +391,10 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 
 </details>
 
-**37 endpoints en total.** Parámetros, cuerpos y respuestas: en [Swagger](https://nebuback.onrender.com/api/docs/).
+**37 operaciones en total** (8 públicas, 7 con sesión y 22 de administración). Parámetros, cuerpos y respuestas: en [Swagger](https://nebuback.onrender.com/api/docs/).
 
 <details>
-<summary><b>Ejemplo: iniciar sesión y ver el carrito</b></summary>
+<summary><b>Ejemplo: iniciar sesión y agregar al carrito</b></summary>
 
 ```bash
 API=https://nebuback.onrender.com/api
@@ -255,9 +405,11 @@ curl -X POST $API/auth/login/ \
   -d '{"email": "cliente@example.com", "password": "********"}'
 # → { "access": "eyJ...", "refresh": "eyJ...", "user": { "id": 5, "name": "Camila", "role": "cliente" } }
 
-# 2. Usar el token
-curl $API/cart/ -H "Authorization: Bearer eyJ..."
-# → { "items": [], "subtotal": 0, "taxRate": 0.08, "tax": 0, "total": 0 }
+# 2. Agregar un iPhone 17 de 256GB en color Sage
+curl -X POST $API/cart/items/ \
+  -H "Authorization: Bearer eyJ..." -H "Content-Type: application/json" \
+  -d '{"slug": "iphone-17", "options": [{"name": "Storage", "value": "256GB"}, {"name": "Color", "value": "Sage"}]}'
+# → el carrito completo, con subtotal, impuesto (8 %) y total
 ```
 
 </details>
@@ -282,14 +434,18 @@ curl $API/cart/ -H "Authorization: Bearer eyJ..."
 ```mermaid
 erDiagram
     CATEGORIA ||--o{ PRODUCTO : agrupa
+    PRODUCTO ||--o{ VARIANTE : "se ofrece en"
+    USUARIO ||--o{ TOKEN_RECUPERACION : solicita
     USUARIO ||--o{ CARRITO : tiene
     USUARIO |o--o{ USUARIO : crea
     CARRITO ||--o{ ITEM_CARRITO : contiene
     PRODUCTO ||--o{ ITEM_CARRITO : "se agrega como"
+    VARIANTE |o--o{ ITEM_CARRITO : "se elige en"
     CARRITO |o--o| PEDIDO : "se convierte en"
     USUARIO |o--o{ PEDIDO : realiza
     PEDIDO ||--|{ LINEA_PEDIDO : incluye
     PRODUCTO |o--o{ LINEA_PEDIDO : "se vendió como"
+    VARIANTE |o--o{ LINEA_PEDIDO : "se vendió en"
 
     USUARIO {
         bigint id PK
@@ -297,29 +453,48 @@ erDiagram
         varchar role "cliente | admin"
         varchar status "active | blocked"
     }
+    TOKEN_RECUPERACION {
+        bigint id PK
+        varchar token_hash UK "SHA-256"
+        timestamptz expires_at "1 hora"
+        timestamptz used_at
+    }
     PRODUCTO {
         bigint id PK
         varchar slug UK
-        decimal price
-        int stock
-        jsonb options
+        numeric price "mínimo de variantes"
+        int stock "suma de variantes"
+        jsonb options "atributos"
         varchar status "live | disabled"
+    }
+    VARIANTE {
+        bigint id PK
+        jsonb options "combinación"
+        numeric price
+        int stock
+        varchar sku
     }
     PEDIDO {
         bigint id PK
         varchar number UK "NB-1001"
-        decimal subtotal
-        decimal tax
-        decimal total
-        varchar status "paid → shipped → delivered"
+        numeric subtotal
+        numeric tax
+        numeric total "subtotal + tax"
+        varchar status "5 estados"
     }
 ```
 
-La base de datos garantiza las reglas clave:
-- un solo carrito activo por usuario;
-- la cantidad de cada línea es de al menos 1;
-- el total de cada pedido es exactamente subtotal más impuesto;
-- borrar un producto o un cliente **no borra el historial de ventas**, porque cada pedido guarda una copia de lo comprado.
+La base de datos garantiza las reglas clave con restricciones propias:
+
+| Restricción | Regla |
+|---|---|
+| `precio_no_negativo` · `precio_variante_no_negativo` | Ningún precio puede ser negativo |
+| `variante_unica_por_producto` | Una combinación no se repite dentro de un producto |
+| `un_carrito_activo_por_usuario` | Un solo carrito activo por cliente |
+| `linea_unica_por_opciones` · `cantidad_minima_1` | Sin líneas duplicadas y cantidad de al menos 1 |
+| `total_igual_subtotal_mas_impuesto` | El total de un pedido es exactamente subtotal más impuesto |
+
+Borrar un producto, una variante o un cliente **no borra el historial de ventas**: cada pedido guarda una copia de lo comprado.
 
 ---
 
@@ -327,11 +502,11 @@ La base de datos garantiza las reglas clave:
 
 | Medida | Cómo se cumple | Cómo demostrarlo |
 |---|---|---|
-| **HTTPS** | Render termina TLS; Django redirige todo HTTP a HTTPS (`SECURE_SSL_REDIRECT`), envía HSTS de 1 año y marca las cookies como `Secure` | `curl -I http://nebuback.onrender.com/api/categories/` → `301` a `https://`; la respuesta HTTPS trae `Strict-Transport-Security` |
-| **XSS** | Todo texto con etiquetas HTML se rechaza antes de guardarse; la API solo responde JSON con `nosniff` y una `Content-Security-Policy` que no permite cargar scripts | Crear un producto con `"description": "<script>alert(1)</script>"` → `400 {"description": ["HTML tags are not allowed."]}` |
+| **HTTPS** | Render termina TLS; Django redirige todo HTTP a HTTPS (`SECURE_SSL_REDIRECT`), envía HSTS de 1 año con `preload` y marca las cookies como `Secure` | `curl -I http://nebuback.onrender.com/api/categories/` → `301` a `https://`; la respuesta HTTPS trae `Strict-Transport-Security` |
+| **XSS** | Todo texto con etiquetas HTML se rechaza antes de guardarse; la API solo responde JSON con `nosniff` y una `Content-Security-Policy: default-src 'none'` | Registrarse con `"name": "<img src=x onerror=alert(1)>"` → `400 {"name": ["HTML tags are not allowed."]}` |
 | **CSRF** | La sesión viaja en el encabezado `Authorization: Bearer`, nunca en cookies, así que otro sitio no puede enviar peticiones a nombre del usuario; CORS solo admite los dominios del frontend y no permite credenciales; el admin de Django usa `CsrfViewMiddleware` | Un `POST` sin token responde `401`; un preflight desde un origen ajeno no recibe `Access-Control-Allow-Origin` |
 
-Además: contraseñas con hash PBKDF2 y validadores de Django, tokens JWT con rotación y lista negra, límite de intentos en login y recuperación de contraseña, y `X-Frame-Options: DENY`.
+Además: contraseñas con hash PBKDF2 y validadores de Django, tokens JWT con rotación y lista negra, límites de intentos (10/min en login y registro, 3 cada 15 min en recuperación), tokens de recuperación guardados solo como hash y `X-Frame-Options: DENY`. Todos estos casos están automatizados en `devconfsite/comun/tests/` y se verificaron contra producción.
 
 ---
 
@@ -345,8 +520,9 @@ DATABASE_URL="sqlite://:memory:" python manage.py test
 |---|:---:|---|
 | Autenticación y usuarios | 28 | Registro, login, renovación y anulación de tokens, recuperación de contraseña, límite de intentos, clientes y admins |
 | Catálogo | 35 | Formato, filtros, búsqueda sin tildes, paginación, CRUD de categorías y productos, variantes |
-| Carrito y pedidos | 21 | Opciones y stock, checkout completo, cliente bloqueado, estados de pedido, dashboard |
+| Carrito y pedidos | 21 | Variantes y stock, checkout completo, cliente bloqueado, estados de pedido, dashboard |
 | Seguridad | 10 | Redirección a HTTPS y HSTS, rechazo de HTML, cabeceras, sesión que no viaja en cookies, CSRF del admin, CORS |
+| **Total** | **94** | **Todas pasan** |
 
 Cada app tiene su carpeta `tests/`, con un archivo por tema. Las pruebas usan una base de datos en memoria y nunca tocan la de producción.
 
@@ -354,14 +530,35 @@ Cada app tiene su carpeta `tests/`, con un archivo por tema. Las pruebas usan un
 
 ## ☁️ Despliegue
 
-El servicio se define en [`render.yaml`](render.yaml) y **se despliega solo con cada merge a `main`**:
+| Pieza | Dónde | Cómo se actualiza |
+|---|---|---|
+| API | Render · `nebuback.onrender.com` | Sola, con cada merge a `main` |
+| Base de datos | Neon · PostgreSQL 18 | Migraciones en cada build de Render |
+| Correo | Resend · dominio `nebulab.digital` verificado (SPF y DKIM) | — |
+| Frontend | Vercel · `www.nebulab.digital` | Repositorio del frontend |
+
+El servicio se define en [`render.yaml`](render.yaml):
 
 ```text
 build:  pip install → collectstatic → migrate
 start:  gunicorn devconf.wsgi:application
 ```
 
-En Render se configuran `DATABASE_URL` y `CORS_ALLOWED_ORIGINS`. `SECRET_KEY` la genera Render y `DEBUG` queda en `False`.
+En Render se configuran `DATABASE_URL`, `CORS_ALLOWED_ORIGINS` y `RESEND_API_KEY`. `SECRET_KEY` la genera Render, `DEBUG` queda en `False` y `FRONTEND_URL` apunta a `https://nebulab.digital`.
+
+---
+
+## 🗺️ Estado del proyecto
+
+| Checkpoint | Semana | Entregable | Estado |
+|:---:|:---:|---|:---:|
+| 1 | 10 | Definición, planeación y documentación | ✅ |
+| 2 | 11 | Modelos, PostgreSQL, API con Swagger y frontend inicial | ✅ |
+| 3 | 12 | Integración con el frontend, despliegue, seguridad y catálogo real | ✅ |
+| 4 | 13 | Colección de Postman, pruebas de extremo a extremo y estados de carga | 🔄 |
+| 5 | 14 | Pruebas del flujo completo desde la interfaz y documentación técnica final | ⏳ |
+| 6 | 15 | Cambio de credenciales y revisión final | ⏳ |
+| 7 | 16 | Entrega final y sustentación | ⏳ |
 
 ---
 
@@ -393,11 +590,11 @@ gitGraph
 
 ## 👥 Equipo
 
-<table>
+<table align="center">
   <tr>
-    <td align="center"><b>Tomás Uribe Sánchez</b><br><sub>Backend · API REST</sub></td>
-    <td align="center"><b>Iván Mateo González Angulo</b><br><sub>Base de datos · Infraestructura</sub></td>
-    <td align="center"><b>Nicolás Rodríguez Acevedo</b><br><sub>Frontend · Next.js</sub></td>
+    <td align="center" width="33%"><b>Tomás Uribe Sánchez</b><br><sub>Backend · API REST · Seguridad</sub></td>
+    <td align="center" width="33%"><b>Iván Mateo González Angulo</b><br><sub>Base de datos · Infraestructura · Despliegue</sub></td>
+    <td align="center" width="33%"><b>Nicolás Rodríguez Acevedo</b><br><sub>Frontend · Next.js · Diseño</sub></td>
   </tr>
 </table>
 
