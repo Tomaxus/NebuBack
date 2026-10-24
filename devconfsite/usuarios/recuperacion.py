@@ -12,10 +12,10 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.serializers import ValidationError
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 from devconfsite.comun.excepciones import ReglaDeNegocio
 
+from . import sesiones
 from .models import TokenRecuperacion, Usuario
 
 logger = logging.getLogger(__name__)
@@ -90,11 +90,6 @@ def solicitar_recuperacion(email):
         logger.exception("No se pudo enviar el correo de recuperación a %s", usuario.email)
 
 
-def cerrar_sesiones(usuario):
-    for token in OutstandingToken.objects.filter(user=usuario):
-        BlacklistedToken.objects.get_or_create(token=token)
-
-
 @transaction.atomic
 def confirmar_recuperacion(token, password):
     registro = (
@@ -114,4 +109,4 @@ def confirmar_recuperacion(token, password):
     usuario.save(update_fields=["password"])
     registro.used_at = timezone.now()
     registro.save(update_fields=["used_at"])
-    cerrar_sesiones(usuario)
+    sesiones.revocar(usuario)

@@ -74,10 +74,10 @@ class RecuperacionTests(BaseAPITest):
         self.assertEqual(self.confirmar(token).status_code, 204)
 
     def test_cierra_las_sesiones_abiertas(self):
-        refresh = self.login("ana@example.com").json()["refresh"]
+        self.login("ana@example.com")
         self.solicitar()
         self.confirmar(self.token_del_correo())
-        self.assertEqual(self.client.post("/api/auth/refresh/", {"refresh": refresh}, format="json").status_code, 401)
+        self.assertEqual(self.renovar().status_code, 401)
 
     def test_limite_de_3_por_email_cada_15_minutos(self):
         codigos = [self.solicitar().status_code for _ in range(4)]

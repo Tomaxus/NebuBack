@@ -9,6 +9,7 @@ from devconfsite.comun.paginacion import OrdenamientoEstable
 from devconfsite.comun.permisos import EsAdmin
 from devconfsite.comun.texto import filtrar_por_palabras
 
+from .. import sesiones
 from ..models import Usuario
 from ..serializers import AdminSerializer, ClienteAdminSerializer
 
@@ -78,7 +79,10 @@ class ClienteAdminDetailView(VistaAdmin, generics.RetrieveUpdateDestroyAPIView):
         return clientes_con_estadisticas()
 
     def perform_update(self, serializer):
-        serializer.instance = clientes_con_estadisticas().get(pk=serializer.save().pk)
+        cliente = serializer.save()
+        if cliente.is_blocked:
+            sesiones.revocar(cliente)
+        serializer.instance = clientes_con_estadisticas().get(pk=cliente.pk)
 
 
 @extend_schema_view(

@@ -4,6 +4,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -119,6 +120,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 IMPUESTO_TASA = Decimal(os.environ.get("IMPUESTO_TASA", "0.08"))
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+if "*" in CORS_ALLOWED_ORIGINS:
+    raise ImproperlyConfigured("CORS_ALLOWED_ORIGINS no puede ser * porque la API acepta credenciales.")
+CORS_ALLOW_CREDENTIALS = True
 
 SOLO_HTTPS = os.environ.get("SOLO_HTTPS", str(not DEBUG)) == "True"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -131,6 +135,14 @@ CSRF_COOKIE_SECURE = SOLO_HTTPS
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
+
+# Cookie del refresh token (ver devconfsite/usuarios/sesiones.py). Con HTTPS lleva el prefijo __Host-,
+# que obliga a Secure, Path=/ y sin Domain; en desarrollo local (http) va sin prefijo.
+AUTH_COOKIE_SECURE = os.environ.get("AUTH_COOKIE_SECURE", str(SOLO_HTTPS)) == "True"
+AUTH_COOKIE_PREFIJO = "__Host-" if AUTH_COOKIE_SECURE else ""
+AUTH_COOKIE_SAMESITE = os.environ.get("AUTH_COOKIE_SAMESITE", "Lax")
+AUTH_ORIGENES_PERMITIDOS = env_list("AUTH_ORIGENES_PERMITIDOS", ",".join(CORS_ALLOWED_ORIGINS))
+AUTH_REFRESH_GRACIA_SEGUNDOS = int(os.environ.get("AUTH_REFRESH_GRACIA_SEGUNDOS", "30"))
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -156,6 +168,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "auth": os.environ.get("AUTH_THROTTLE_RATE", "10/min"),
+        "refresh": os.environ.get("REFRESH_THROTTLE_RATE", "30/min"),
     },
     "DEFAULT_PAGINATION_CLASS": "devconfsite.comun.paginacion.Paginacion",
     "COERCE_DECIMAL_TO_STRING": False,
@@ -164,7 +177,7 @@ REST_FRAMEWORK = {
 JSON_CAMEL_CASE = {"JSON_UNDERSCOREIZE": {"no_underscore_before_number": True}}
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ.get("ACCESS_TOKEN_MINUTOS", "10"))),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
