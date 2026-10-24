@@ -45,14 +45,14 @@ class RegistroSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         value = value.strip().lower()
-        existente = Usuario.objects.filter(email=value).first()
-        if existente and existente.has_usable_password():
+        # Una cuenta creada por un admin (sin contraseña) solo se reclama con el enlace de recuperación,
+        # que prueba que quien la reclama controla el correo.
+        if Usuario.objects.filter(email=value).exists():
             raise serializers.ValidationError("An account with this email already exists.")
-        self.context["existente"] = existente
         return value
 
     def validate(self, attrs):
-        candidato = self.context.get("existente") or Usuario(email=attrs["email"], name=attrs["name"])
+        candidato = Usuario(email=attrs["email"], name=attrs["name"])
         try:
             validate_password(attrs["password"], candidato)
         except DjangoValidationError as error:
@@ -60,12 +60,6 @@ class RegistroSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        existente = self.context.get("existente")
-        if existente:
-            existente.name = validated_data["name"]
-            existente.set_password(validated_data["password"])
-            existente.save()
-            return existente
         return Usuario.objects.create_user(
             email=validated_data["email"], name=validated_data["name"], password=validated_data["password"]
         )
@@ -162,6 +156,10 @@ class AdminSerializer(SerializerBase):
     def validate_password(self, value):
         if len(value) < 8:
             raise serializers.ValidationError("Use at least 8 characters.")
+        try:
+            validate_password(value)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(list(error.messages))
         return value
 
     def create(self, validated_data):
