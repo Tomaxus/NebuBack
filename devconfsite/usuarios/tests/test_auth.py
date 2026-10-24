@@ -26,12 +26,12 @@ class AuthTests(BaseAPITest):
         self.assertEqual(respuesta.status_code, 400)
         self.assertIn("password", respuesta.json())
 
-    def test_registro_reclama_cliente_creado_por_admin(self):
+    def test_registro_no_reclama_cliente_creado_por_admin(self):
         cliente = Usuario.objects.create_user("porreclamar@example.com", "Sin clave", None)
-        respuesta = self.client.post("/api/auth/register/", {"name": "Ya con clave", "email": "porreclamar@example.com", "password": CLAVE}, format="json")
-        self.assertEqual(respuesta.status_code, 201)
+        respuesta = self.client.post("/api/auth/register/", {"name": "Intruso", "email": "porreclamar@example.com", "password": CLAVE}, format="json")
+        self.assertEqual(respuesta.status_code, 400)
         cliente.refresh_from_db()
-        self.assertTrue(cliente.check_password(CLAVE))
+        self.assertFalse(cliente.has_usable_password())
         self.assertEqual(Usuario.objects.filter(email="porreclamar@example.com").count(), 1)
 
     def test_login_y_me(self):
