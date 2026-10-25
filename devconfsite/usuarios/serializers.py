@@ -3,19 +3,13 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from devconfsite.comun.campos import DineroField, FechaUTCField, SerializerBase
 
 from .models import Usuario
+from .sesiones import TIPOS
 
 CREDENCIALES_INVALIDAS = "Wrong email or password."
-
-
-def tokens_para(usuario):
-    refresh = RefreshToken.for_user(usuario)
-    return {"access": str(refresh.access_token), "refresh": str(refresh)}
 
 
 def email_en_uso(email, excluir=None):
@@ -34,8 +28,11 @@ class UsuarioSerializer(SerializerBase):
 
 class SesionSerializer(serializers.Serializer):
     access = serializers.CharField()
-    refresh = serializers.CharField()
     user = UsuarioSerializer()
+
+
+class TipoSesionSerializer(serializers.Serializer):
+    kind = serializers.ChoiceField(choices=TIPOS, help_text="customer o admin: qué cookie de sesión usar.")
 
 
 class RegistroSerializer(serializers.Serializer):
@@ -65,7 +62,7 @@ class RegistroSerializer(serializers.Serializer):
         )
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(TipoSesionSerializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, trim_whitespace=False)
 
@@ -79,18 +76,6 @@ class LoginSerializer(serializers.Serializer):
             raise AuthenticationFailed(CREDENCIALES_INVALIDAS)
         attrs["user"] = usuario
         return attrs
-
-
-class RefreshSerializer(TokenRefreshSerializer):
-    def validate(self, attrs):
-        try:
-            return super().validate(attrs)
-        except Usuario.DoesNotExist:
-            raise AuthenticationFailed("No active account found for the given token.", "no_active_account")
-
-
-class LogoutSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
 
 
 class PasswordResetSerializer(serializers.Serializer):

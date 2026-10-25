@@ -12,7 +12,8 @@ class AuthTests(BaseAPITest):
         )
         self.assertEqual(respuesta.status_code, 201)
         datos = respuesta.json()
-        self.assertEqual(set(datos), {"access", "refresh", "user"})
+        self.assertEqual(set(datos), {"access", "user"})
+        self.assertTrue(respuesta.cookies["nebulab-refresh-customer"]["httponly"])
         self.assertEqual(datos["user"]["email"], "camila@example.com")
         self.assertEqual(datos["user"]["role"], "cliente")
         self.assertEqual(set(datos["user"]), {"id", "name", "email", "role"})
@@ -52,21 +53,86 @@ class AuthTests(BaseAPITest):
 
     def test_refresh_rota_y_logout_invalida(self):
         Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
-        sesion = self.autenticar("ana@example.com")
-        nuevo = self.client.post("/api/auth/refresh/", {"refresh": sesion["refresh"]}, format="json")
+        self.login("ana@example.com")
+        viejo = self.client.cookies["nebulab-refresh-customer"].value
+        nuevo = self.renovar()
         self.assertEqual(nuevo.status_code, 200)
-        self.assertEqual(set(nuevo.json()), {"access", "refresh"})
-        self.assertEqual(self.client.post("/api/auth/refresh/", {"refresh": sesion["refresh"]}, format="json").status_code, 401)
-        refresh = nuevo.json()["refresh"]
-        self.assertEqual(self.client.post("/api/auth/logout/", {"refresh": refresh}, format="json").status_code, 204)
-        self.assertEqual(self.client.post("/api/auth/refresh/", {"refresh": refresh}, format="json").status_code, 401)
+        self.assertEqual(set(nuevo.json()), {"access", "user"})
+        self.assertEqual(nuevo.json()["user"]["email"], "ana@example.com")
+        self.assertIn("no-store", nuevo["Cache-Control"])
+        self.assertNotEqual(self.client.cookies["nebulab-refresh-customer"].value, viejo)
+        self.assertEqual(self.salir().status_code, 204)
+        self.assertEqual(self.client.cookies["nebulab-refresh-customer"].value, "")
+        self.assertEqual(self.renovar().status_code, 401)
+        self.assertEqual(self.salir().status_code, 204)
 
-    def test_refresh_de_usuario_borrado_es_401(self):
+    def test_refresh_viejo_no_se_reutiliza_y_revoca_la_familia(self):
+        Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
+        self.login("ana@example.com")
+        viejo = self.client.cookies["nebulab-refresh-customer"].value
+        self.assertEqual(self.renovar().status_code, 200)
+        vigente = self.client.cookies["nebulab-refresh-customer"].value
+        self.client.cookies["nebulab-refresh-customer"] = viejo
+        self.assertEqual(self.renovar().status_code, 401)
+        with self.settings(AUTH_REFRESH_GRACIA_SEGUNDOS=-1):
+            self.client.cookies["nebulab-refresh-customer"] = viejo
+            self.assertEqual(self.renovar().status_code, 401)
+        self.client.cookies["nebulab-refresh-customer"] = vigente
+        self.assertEqual(self.renovar().status_code, 401)
+
+    def test_sesiones_de_cliente_y_admin_independientes(self):
+        Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
+        Usuario.objects.create_superuser("admin@nebulab.com", "Admin", CLAVE)
+        self.login("ana@example.com")
+        self.login("admin@nebulab.com")
+        self.assertEqual(self.salir("customer").status_code, 204)
+        self.assertEqual(self.renovar("customer").status_code, 401)
+        respuesta = self.renovar("admin")
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json()["user"]["role"], "admin")
+
+    def test_login_rechaza_rol_de_otra_sesion(self):
+        Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
+        respuesta = self.login("ana@example.com", kind="admin")
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertNotIn("nebulab-refresh-admin", respuesta.cookies)
+        self.login("ana@example.com")
+        self.client.cookies["nebulab-refresh-admin"] = self.client.cookies["nebulab-refresh-customer"].value
+        self.assertEqual(self.renovar("admin").status_code, 401)
+
+    def test_refresh_y_logout_exigen_origen_permitido(self):
+        Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
+        self.login("ana@example.com")
+        self.assertEqual(self.renovar(origen="https://malo.example").status_code, 403)
+        self.assertEqual(self.client.post("/api/auth/refresh/", {"kind": "customer"}, format="json").status_code, 403)
+        self.assertEqual(self.salir(origen="https://malo.example").status_code, 403)
+        self.assertEqual(self.renovar().status_code, 200)
+
+    def test_cors_con_credenciales_solo_para_el_frontend(self):
+        respuesta = self.client.options(
+            "/api/auth/refresh/", HTTP_ORIGIN="http://localhost:3000", HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST"
+        )
+        self.assertEqual(respuesta["Access-Control-Allow-Origin"], "http://localhost:3000")
+        self.assertEqual(respuesta["Access-Control-Allow-Credentials"], "true")
+        self.assertIn("origin", respuesta["Vary"].lower())
+        otra = self.client.options("/api/auth/refresh/", HTTP_ORIGIN="https://malo.example", HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST")
+        self.assertNotIn("Access-Control-Allow-Origin", otra)
+
+    def test_refresh_de_usuario_borrado_o_bloqueado_es_401(self):
         usuario = Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
-        refresh = self.login("ana@example.com").json()["refresh"]
+        self.login("ana@example.com")
         usuario.delete()
-        respuesta = self.client.post("/api/auth/refresh/", {"refresh": refresh}, format="json")
-        self.assertEqual(respuesta.status_code, 401)
+        self.assertEqual(self.renovar().status_code, 401)
+
+    def test_bloquear_cliente_cierra_sus_sesiones(self):
+        Usuario.objects.create_superuser("admin@nebulab.com", "Admin", CLAVE)
+        cliente = Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)
+        self.login("ana@example.com")
+        cookie = self.client.cookies["nebulab-refresh-customer"].value
+        self.autenticar("admin@nebulab.com")
+        self.assertEqual(self.client.patch(f"/api/admin/customers/{cliente.pk}/", {"status": "blocked"}, format="json").status_code, 200)
+        self.client.cookies["nebulab-refresh-customer"] = cookie
+        self.assertEqual(self.renovar().status_code, 401)
 
     def test_password_reset_siempre_204(self):
         Usuario.objects.create_user("ana@example.com", "Ana", CLAVE)

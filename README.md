@@ -16,7 +16,7 @@
   <img alt="JWT" src="https://img.shields.io/badge/Auth-JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white">
   <img alt="OpenAPI" src="https://img.shields.io/badge/OpenAPI-3-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white">
   <img alt="Resend" src="https://img.shields.io/badge/Correo-Resend-000000?style=flat-square&logo=resend&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-94%20passing-2EA44F?style=flat-square">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-100%20passing-2EA44F?style=flat-square">
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 <table align="center">
   <tr>
     <td align="center"><h3>37</h3><sub>operaciones REST</sub></td>
-    <td align="center"><h3>94</h3><sub>pruebas automáticas</sub></td>
+    <td align="center"><h3>100</h3><sub>pruebas automáticas</sub></td>
     <td align="center"><h3>9</h3><sub>tablas del dominio</sub></td>
     <td align="center"><h3>3/3</h3><sub>medidas de seguridad<br>(HTTPS · XSS · CSRF)</sub></td>
     <td align="center"><h3>100 %</h3><sub>desplegado y<br>conectado al frontend</sub></td>
@@ -55,7 +55,7 @@
 |---|---|
 | 🛍️ **Catálogo** | Categorías administrables y productos con atributos (almacenamiento, color, talla…). Búsqueda sin tildes, filtros, orden y paginación |
 | 🎛️ **Variantes** | Cada combinación (por ejemplo, *256GB · Black*) tiene **su propio precio y stock**; el producto muestra el precio "desde" y el stock total |
-| 👤 **Cuentas** | Registro e inicio de sesión de clientes y administradores con **JWT**: tokens que rotan en cada renovación y se anulan al cerrar sesión |
+| 👤 **Cuentas** | Registro e inicio de sesión de clientes y administradores con **JWT**: el token de renovación viaja en una cookie `HttpOnly`, rota en cada uso y se anula al cerrar sesión; sesiones de cliente y admin independientes |
 | 📧 **Recuperación de contraseña** | Enlace de un solo uso enviado con **Resend** desde `noreply@nebulab.digital`; el token se guarda solo como hash y vence en 1 hora |
 | 🛒 **Carrito** | Un carrito por cliente; subtotal, **impuesto del 8 %** y total calculados en el servidor |
 | 💳 **Checkout** | Pedido `NB-1001…` en una sola transacción con bloqueo de filas: valida y descuenta el stock de cada variante (el pago es simulado) |
@@ -179,6 +179,12 @@ Abre **http://127.0.0.1:8000/api/docs/** y prueba la API.
 | `RESET_TOKEN_MINUTOS` | | Vigencia del enlace de recuperación (por defecto `60`) |
 | `IMPUESTO_TASA` | | Tasa de impuesto (por defecto `0.08`) |
 | `AUTH_THROTTLE_RATE` | | Límite de intentos de login y registro (por defecto `10/min`) |
+| `REFRESH_THROTTLE_RATE` | | Límite de renovaciones (por defecto `30/min`) |
+| `ACCESS_TOKEN_MINUTOS` | | Vida del token de acceso (por defecto `10`) |
+| `AUTH_COOKIE_SECURE` | | Cookie `Secure` con prefijo `__Host-` (por defecto igual que HTTPS obligatorio) |
+| `AUTH_COOKIE_SAMESITE` | | `SameSite` de la cookie (por defecto `Lax`) |
+| `AUTH_ORIGENES_PERMITIDOS` | | Orígenes que pueden usar `/auth/refresh/` y `/auth/logout/` (por defecto, los de CORS) |
+| `AUTH_REFRESH_GRACIA_SEGUNDOS` | | Margen en que reusar un refresh ya rotado no cierra todas las sesiones (por defecto `30`) |
 
 </details>
 
@@ -340,8 +346,8 @@ Base: `https://nebuback.onrender.com/api` · 🌐 público · 🔑 con sesión �
 |---|---|:---:|---|
 | `POST` | `/auth/register/` | 🌐 | Registra un cliente y devuelve la sesión |
 | `POST` | `/auth/login/` | 🌐 | Inicia sesión (clientes y admins) |
-| `POST` | `/auth/refresh/` | 🌐 | Renueva los tokens |
-| `POST` | `/auth/logout/` | 🔑 | Anula el token de renovación |
+| `POST` | `/auth/refresh/` | 🌐 | Con la cookie, rota el refresh y devuelve un access nuevo y el usuario |
+| `POST` | `/auth/logout/` | 🔑 | Anula la sesión de la cookie y la borra |
 | `GET` | `/auth/me/` | 🔑 | Usuario actual |
 | `POST` | `/auth/password-reset/` | 🌐 | Envía el correo de recuperación |
 | `POST` | `/auth/password-reset/confirm/` | 🌐 | Guarda la contraseña nueva con el token del correo |
@@ -402,8 +408,9 @@ API=https://nebuback.onrender.com/api
 # 1. Iniciar sesión
 curl -X POST $API/auth/login/ \
   -H "Content-Type: application/json" \
-  -d '{"email": "cliente@example.com", "password": "********"}'
-# → { "access": "eyJ...", "refresh": "eyJ...", "user": { "id": 5, "name": "Camila", "role": "cliente" } }
+  -d '{"email": "cliente@example.com", "password": "********", "kind": "customer"}'
+# → { "access": "eyJ...", "user": { "id": 5, "name": "Camila", "role": "cliente" } }
+#   + Set-Cookie: __Host-nebulab-refresh-customer=…; HttpOnly; Secure; SameSite=Lax; Path=/
 
 # 2. Agregar un iPhone 17 de 256GB en color Sage
 curl -X POST $API/cart/items/ \
@@ -425,7 +432,7 @@ curl -X POST $API/cart/items/ \
 | **Dinero** | Número en USD con 2 decimales |
 | **Fechas** | ISO 8601 en UTC |
 | **Errores** | `{ "campo": ["mensaje"] }` o `{ "detail": "mensaje" }`, en inglés |
-| **Sesión** | Token de acceso de 30 minutos y de renovación de 7 días, que se rota en cada uso |
+| **Sesión** | Token de acceso de 10 minutos, solo en memoria del frontend; renovación de 7 días en cookie `HttpOnly`, rotada en cada uso, con detección de reutilización |
 
 ---
 
@@ -504,7 +511,7 @@ Borrar un producto, una variante o un cliente **no borra el historial de ventas*
 |---|---|---|
 | **HTTPS** | Render termina TLS; Django redirige todo HTTP a HTTPS (`SECURE_SSL_REDIRECT`), envía HSTS de 1 año con `preload` y marca las cookies como `Secure` | `curl -I http://nebuback.onrender.com/api/categories/` → `301` a `https://`; la respuesta HTTPS trae `Strict-Transport-Security` |
 | **XSS** | Todo texto con etiquetas HTML se rechaza antes de guardarse; la API solo responde JSON con `nosniff` y una `Content-Security-Policy: default-src 'none'` | Registrarse con `"name": "<img src=x onerror=alert(1)>"` → `400 {"name": ["HTML tags are not allowed."]}` |
-| **CSRF** | La sesión viaja en el encabezado `Authorization: Bearer`, nunca en cookies, así que otro sitio no puede enviar peticiones a nombre del usuario; CORS solo admite los dominios del frontend y no permite credenciales; el admin de Django usa `CsrfViewMiddleware` | Un `POST` sin token responde `401`; un preflight desde un origen ajeno no recibe `Access-Control-Allow-Origin` |
+| **CSRF** | El access viaja en `Authorization: Bearer`, no en cookies. La única cookie es la de renovación (`HttpOnly`, `Secure`, `SameSite=Lax`, prefijo `__Host-`) y solo la leen `/auth/refresh/` y `/auth/logout/`, que exigen un `Origin` de la lista exacta del frontend. CORS admite credenciales solo para esos dominios (nunca `*`) y el admin de Django usa `CsrfViewMiddleware` | Un `POST` sin token responde `401`; refresh o logout desde otro origen responden `403`; un preflight ajeno no recibe `Access-Control-Allow-Origin` |
 
 Además: contraseñas con hash PBKDF2 y validadores de Django, tokens JWT con rotación y lista negra, límites de intentos (10/min en login y registro, 3 cada 15 min en recuperación), tokens de recuperación guardados solo como hash y `X-Frame-Options: DENY`. Todos estos casos están automatizados en `devconfsite/comun/tests/` y se verificaron contra producción.
 
@@ -518,11 +525,11 @@ DATABASE_URL="sqlite://:memory:" python manage.py test
 
 | Área | Tests | Cubre |
 |---|:---:|---|
-| Autenticación y usuarios | 28 | Registro, login, renovación y anulación de tokens, recuperación de contraseña, límite de intentos, clientes y admins |
+| Autenticación y usuarios | 34 | Registro, login, renovación y anulación de tokens, recuperación de contraseña, límite de intentos, clientes y admins |
 | Catálogo | 35 | Formato, filtros, búsqueda sin tildes, paginación, CRUD de categorías y productos, variantes |
 | Carrito y pedidos | 21 | Variantes y stock, checkout completo, cliente bloqueado, estados de pedido, dashboard |
-| Seguridad | 10 | Redirección a HTTPS y HSTS, rechazo de HTML, cabeceras, sesión que no viaja en cookies, CSRF del admin, CORS |
-| **Total** | **94** | **Todas pasan** |
+| Seguridad | 10 | Redirección a HTTPS y HSTS, rechazo de HTML, cabeceras, access que no viaja en cookies, CSRF del admin, CORS |
+| **Total** | **100** | **Todas pasan** |
 
 Cada app tiene su carpeta `tests/`, con un archivo por tema. Las pruebas usan una base de datos en memoria y nunca tocan la de producción.
 

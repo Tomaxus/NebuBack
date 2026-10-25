@@ -7,14 +7,24 @@ from rest_framework.test import APITestCase
 from devconfsite.usuarios.models import Usuario
 
 CLAVE = "ClaveSegura123!"
+ORIGEN = "http://localhost:3000"
 
 
 class BaseAPITest(APITestCase):
     def setUp(self):
         cache.clear()
 
-    def login(self, email, password=CLAVE):
-        return self.client.post("/api/auth/login/", {"email": email, "password": password}, format="json")
+    def login(self, email, password=CLAVE, kind=None):
+        if kind is None:
+            es_admin = Usuario.objects.filter(email=email.lower(), role=Usuario.Role.ADMIN).exists()
+            kind = "admin" if es_admin else "customer"
+        return self.client.post("/api/auth/login/", {"email": email, "password": password, "kind": kind}, format="json")
+
+    def renovar(self, kind="customer", origen=ORIGEN):
+        return self.client.post("/api/auth/refresh/", {"kind": kind}, format="json", HTTP_ORIGIN=origen)
+
+    def salir(self, kind="customer", origen=ORIGEN):
+        return self.client.post("/api/auth/logout/", {"kind": kind}, format="json", HTTP_ORIGIN=origen)
 
     def autenticar(self, email, password=CLAVE):
         respuesta = self.login(email, password)

@@ -89,4 +89,5 @@ class CSRFTests(SeguridadTest):
         self.assertEqual(propio["Access-Control-Allow-Origin"], "https://nebulab.digital")
         ajeno = self.client.options("/api/cart/items/", HTTP_ORIGIN="https://sitio-malicioso.com", **preflight)
         self.assertNotIn("Access-Control-Allow-Origin", ajeno)
-        self.assertNotIn("Access-Control-Allow-Credentials", propio)
+        self.assertEqual(propio["Access-Control-Allow-Credentials"], "true")
+        self.assertNotIn("Access-Control-Allow-Credentials", ajeno)
