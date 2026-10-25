@@ -1,32 +1,34 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from devconfsite.comun.limites import ThrottleRecuperacionEmail, ThrottleRecuperacionIP
 
-from .. import recuperacion
+from .. import recuperacion, sesiones
 from ..serializers import (
     LoginSerializer,
-    LogoutSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
-    RefreshSerializer,
     RegistroSerializer,
     SesionSerializer,
+    TipoSesionSerializer,
     UsuarioSerializer,
-    tokens_para,
+)
+
+COOKIE = (
+    "El refresh token no viaja en el JSON: llega en la cookie HttpOnly __Host-nebulab-refresh-{kind} "
+    "(Secure, SameSite=Lax, Path=/). El frontend debe usar credentials: \"include\"."
 )
 
 
-def respuesta_sesion(usuario, codigo):
-    return Response({**tokens_para(usuario), "user": UsuarioSerializer(usuario).data}, status=codigo)
+def respuesta_sesion(usuario, tipo, codigo, refresh=None):
+    refresh = refresh or sesiones.refresh_para(usuario, tipo)
+    respuesta = Response({"access": str(refresh.access_token), "user": UsuarioSerializer(usuario).data}, status=codigo)
+    sesiones.poner_cookie(respuesta, tipo, refresh)
+    return respuesta
 
 
 class VistaAuth(APIView):
@@ -37,19 +39,44 @@ class VistaAuth(APIView):
     def get_authenticate_header(self, request):
         return 'Bearer realm="api"'
 
+    def finalize_response(self, request, response, *args, **kwargs):
+        return sesiones.sin_cache(super().finalize_response(request, response, *args, **kwargs))
 
-@extend_schema(tags=["Autenticación"], summary="Registrar cliente", request=RegistroSerializer, responses={201: SesionSerializer})
+
+class VistaCookie(VistaAuth):
+    """Endpoints que leen la cookie de sesión: solo aceptan peticiones de los orígenes del frontend (CSRF)."""
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        sesiones.exigir_origen_permitido(request)
+
+    def tipo(self, request):
+        serializer = TipoSesionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data["kind"]
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    summary="Registrar cliente",
+    description="Crea la cuenta y abre la sesión de cliente. " + COOKIE,
+    request=RegistroSerializer,
+    responses={201: SesionSerializer},
+)
 class RegistroView(VistaAuth):
     def post(self, request):
         serializer = RegistroSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return respuesta_sesion(serializer.save(), status.HTTP_201_CREATED)
+        return respuesta_sesion(serializer.save(), sesiones.CLIENTE, status.HTTP_201_CREATED)
 
 
 @extend_schema(
     tags=["Autenticación"],
     summary="Iniciar sesión",
-    description="Sirve para clientes y admins. El rol viene en user.role. Credenciales incorrectas: 401 \"Wrong email or password.\"",
+    description=(
+        "kind dice qué sesión se abre: customer (tienda) o admin (CMS). Credenciales incorrectas: 401 \"Wrong email or password.\". "
+        "Cuenta de otro rol: 403 \"This account cannot sign in here.\". " + COOKIE
+    ),
     request=LoginSerializer,
     responses={200: SesionSerializer},
 )
@@ -57,30 +84,46 @@ class LoginView(VistaAuth):
     def post(self, request):
         serializer = LoginSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        return respuesta_sesion(serializer.validated_data["user"], status.HTTP_200_OK)
+        usuario, tipo = serializer.validated_data["user"], serializer.validated_data["kind"]
+        sesiones.exigir_rol(usuario, tipo)
+        return respuesta_sesion(usuario, tipo, status.HTTP_200_OK)
 
 
-@extend_schema(tags=["Autenticación"], summary="Renovar el access token", description="Devuelve un access y un refresh nuevos. El refresh anterior deja de servir.")
-class RefreshView(TokenRefreshView):
-    serializer_class = RefreshSerializer
-    throttle_scope = "auth"
-
-
-@extend_schema(tags=["Autenticación"], summary="Cerrar sesión", request=LogoutSerializer, responses={204: None})
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+@extend_schema(
+    tags=["Autenticación"],
+    summary="Renovar el access token",
+    description=(
+        "Sin token en el cuerpo: usa la cookie del kind indicado, la rota y devuelve un access nuevo con el usuario. "
+        "Cookie ausente, vencida, revocada o de otro rol: 401. Origen no permitido: 403. " + COOKIE
+    ),
+    request=TipoSesionSerializer,
+    responses={200: SesionSerializer},
+)
+class RefreshView(VistaCookie):
+    throttle_scope = "refresh"
 
     def post(self, request):
-        serializer = LogoutSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            token = RefreshToken(serializer.validated_data["refresh"])
-            if str(token.get("user_id")) != str(request.user.pk):
-                raise TokenError()
-            token.blacklist()
-        except TokenError:
-            raise ValidationError({"refresh": ["Token is invalid or expired."]})
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        tipo = self.tipo(request)
+        usuario, refresh = sesiones.rotar(request.COOKIES.get(sesiones.nombre_cookie(tipo)), tipo)
+        return respuesta_sesion(usuario, tipo, status.HTTP_200_OK, refresh)
+
+
+@extend_schema(
+    tags=["Autenticación"],
+    summary="Cerrar sesión",
+    description="Revoca la sesión del kind indicado y borra su cookie. Siempre 204, aunque el access haya vencido; no toca la otra sesión.",
+    request=TipoSesionSerializer,
+    responses={204: None},
+)
+class LogoutView(VistaCookie):
+    throttle_scope = None
+
+    def post(self, request):
+        tipo = self.tipo(request)
+        sesiones.cerrar(request.COOKIES.get(sesiones.nombre_cookie(tipo)), tipo)
+        respuesta = Response(status=status.HTTP_204_NO_CONTENT)
+        sesiones.borrar_cookie(respuesta, tipo)
+        return respuesta
 
 
 @extend_schema(tags=["Autenticación"], summary="Usuario actual", responses=UsuarioSerializer)
